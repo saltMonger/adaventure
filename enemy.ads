@@ -1,18 +1,21 @@
+WITH Ada.Text_IO;             USE Ada.Text_IO;
+WITH Ada.Strings.Unbounded;   USE Ada.Strings.Unbounded;
+
 PACKAGE ENEMY IS
 
-   -- Give the enemey a name
-   PROCEDURE Set_Name(N : String);
+   type Monster is record
+      Name : Unbounded_String;
+      Level: Positive;
+      HP : Integer;
+      Strength : Integer;
+      Defense : Integer;
+      Agility : Integer;
+   end record;
 
    -- Set the enemy's physical attributes
-   PROCEDURE Set_Stats(Set_HP : Integer; Set_Strength : Integer;
-                       Set_Defense : Integer; Set_Agility : Integer);
+   PROCEDURE Create_Monster(Monster_Stats : IN File_Type; Mon : IN OUT Monster);
 
-   -- To damage the enemy's health
-   PROCEDURE Take_Damage(Damage : Integer);
-
-   -- A value used to damage the player
-   FUNCTION Attack RETURN Integer;
-
-   FUNCTION Is_Enemy_Alive RETURN Boolean;
+   -- Display the enemy's physical attributes
+   PROCEDURE Display_Monster_Stats(Mon : IN Monster);
 
 END ENEMY;

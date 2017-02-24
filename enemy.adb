@@ -1,46 +1,37 @@
+WITH Ada.Integer_Text_IO;     USE Ada.Integer_Text_IO;
+
 PACKAGE BODY ENEMY IS
 
-   Name : String(1..10);
-   HP : Integer;
-   Strength : Integer;
-   Defense : Integer;
-   Agility : Integer;
-
-   PROCEDURE Set_Name(N : String) IS
+   PROCEDURE Create_Monster(Monster_Stats : in File_Type; mon : in out Monster) IS
    BEGIN
-      Name := N;
-   END Set_Name;
+      mon.Name := To_Unbounded_String(Get_Line(Monster_Stats));
+      Get(File => Monster_Stats, Item => mon.Level);
+      Get(File => Monster_Stats, Item => mon.HP);
+      Get(File => Monster_Stats, Item => mon.Strength);
+      Get(File => Monster_Stats, Item => mon.Defense);
+      Get(File => Monster_Stats, Item => mon.Agility);
+   END Create_Monster;
 
-   PROCEDURE Set_Stats(Set_HP : Integer; Set_Strength : Integer;
-                       Set_Defense : Integer; Set_Agility : Integer) IS
+   PROCEDURE Display_Monster_Stats(Mon : IN Monster) IS
    BEGIN
-      HP := Set_HP;
-      Strength := Set_Strength;
-      Defense := Set_Defense;
-      Agility := Set_Agility;
-   END Set_Stats;
-
-   PROCEDURE Take_Damage(Damage : Integer) IS
-   BEGIN
-      IF(Damage < HP) THEN
-         HP := HP - Damage;
-      ELSE
-         HP := 0;
-      END IF;
-   END Take_Damage;
-
-   FUNCTION Attack RETURN Integer IS
-   BEGIN
-      RETURN Strength;      -- Placeholder
-   END Attack;
-
-   FUNCTION Is_Enemy_Alive RETURN Boolean IS
-   BEGIN
-      IF HP = 0 THEN
-         RETURN False;
-      ELSE
-         RETURN True;
-      END IF;
-   END Is_Enemy_Alive;
+      Put("Name: ");
+      Put(To_String(mon.Name));
+      New_Line;
+      Put("Level: ");
+      Put(Item => mon.Level, Width => 5);
+      New_Line;
+      Put("HP: ");
+      Put(Item => mon.HP, Width => 8);
+      New_Line;
+      Put("Strength: ");
+      Put(Item => mon.Strength, Width => 2);
+      New_Line;
+      Put("Defense: ");
+      Put(Item => mon.Defense, Width => 3);
+      New_Line;
+      Put("Agility: ");
+      Put(Item => mon.Agility, Width => 3);
+      New_Line;
+   END Display_Monster_Stats;
 
 END ENEMY;
