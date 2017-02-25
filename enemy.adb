@@ -2,6 +2,7 @@ WITH Ada.Integer_Text_IO;     USE Ada.Integer_Text_IO;
 
 PACKAGE BODY ENEMY IS
 
+   -- A procedure to create a monster. This will later be updated to store monster information into an array.
    PROCEDURE Create_Monster(Monster_Stats : in File_Type; mon : in out Monster) IS
    BEGIN
       mon.Name := To_Unbounded_String(Get_Line(Monster_Stats));
@@ -12,6 +13,7 @@ PACKAGE BODY ENEMY IS
       Get(File => Monster_Stats, Item => mon.Agility);
    END Create_Monster;
 
+   -- Display a monster's stats. This will later be updated to display all available monster's stats
    PROCEDURE Display_Monster_Stats(Mon : IN Monster) IS
    BEGIN
       Put("Name: ");

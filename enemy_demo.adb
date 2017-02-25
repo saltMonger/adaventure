@@ -8,12 +8,15 @@ PROCEDURE Enemy_Demo IS
 
 BEGIN
 
+   -- Open the monsters.txt file
    Open(File => Monster_File,
         Mode => In_File,
-        Name => "slime.txt");
+        Name => "monsters.txt");
 
+   -- Create a simple slime for testing
    Enemy.Create_Monster(Monster_Stats => Monster_File, Mon => Slime);
 
+   -- Display the slime's stats
    Enemy.Display_Monster_Stats(Mon => Slime);
 
 END Enemy_Demo;

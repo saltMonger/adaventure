@@ -1,21 +1,8 @@
-WITH Ada.Text_IO;   USE Ada.Text_IO;
+WITH Ada.Text_IO;           USE Ada.Text_IO;
 
 PROCEDURE Test IS
 
-   User_Input : Character;
-
-   TYPE Item IS RECORD
-      Name : String(1..10);
-      Description : String(1..30);
-      Weight : Float;
-   END RECORD;
-
-   TYPE Room IS RECORD
-      Name : String(1..10);
-      Num_Of_Enemies : Integer;
-      Num_Of_Items : Integer;
-      Num_Of_Doors : Integer;
-   END RECORD;
+   User_Input : Character := 'A';
 
 BEGIN
 

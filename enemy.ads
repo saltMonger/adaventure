@@ -3,6 +3,7 @@ WITH Ada.Strings.Unbounded;   USE Ada.Strings.Unbounded;
 
 PACKAGE ENEMY IS
 
+   -- A record to store information about a particular monster
    type Monster is record
       Name : Unbounded_String;
       Level: Positive;
