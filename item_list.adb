@@ -7,109 +7,106 @@ PACKAGE BODY Item_List IS
    Num_Of_Consumables : CONSTANT Integer := 2;
    Num_Of_Weapons     : CONSTANT Integer := 2;
    Num_Of_Armor       : CONSTANT Integer := 2;
+   -- An input string to hold information from the file that is not important to the items array
+   Input              : Unbounded_String;
+   Item_Flag          : Boolean;               -- A flag to assist setting the Is_Weapon and Is_Armor flags
 
-   -- Arrays to store the different item types
-   TYPE Consumables_Array_Type IS ARRAY (Integer RANGE 1..Num_Of_Consumables) OF Consumable;
-   TYPE Weapons_Array_Type IS ARRAY (Integer RANGE 1..Num_Of_Weapons) OF Weapon;
-   TYPE Armor_Array_Type IS ARRAY (Integer RANGE 1..Num_Of_Armor) OF Armor;
+   -- Array to store all the items
+   TYPE Items_Array_Type IS ARRAY (Integer RANGE 1..Num_Of_Consumables + Num_Of_Weapons + Num_Of_Armor) OF Item_Type;
+   Items_Array : Items_Array_Type;
 
-   Consumables_Array : Consumables_Array_Type;
-   Weapons_Array     : Weapons_Array_Type;
-   Armor_Array       : Armor_Array_Type;
-   Input_Buffer      : Unbounded_String;         -- An input variable to assist with an issue that file reading seems to have with unbounded strings
-
-   -- This procedure loads the consumables information from the items.txt file into
-   -- the consumables array
-   PROCEDURE Create_Consumables_List(Items_File : IN OUT File_Type) IS
+   -- A procedure for filling the array from a txt file
+   -- Fills in this order:  1. Consumables
+   --                       2. Weapons
+   --                       3. Armor
+   PROCEDURE Fill_Items_Array(Items_File : IN OUT File_Type) IS
    BEGIN
-      Input_Buffer := To_Unbounded_String(Get_Line(Items_File));         -- Skip the CONSUMABLES title in the items.txt file
+      Input := To_Unbounded_String(Get_Line(Items_File));         -- Gets the CONSUMABLES part of the file
+      -- Starts a loop to grab consumable items
       FOR I IN Integer RANGE 1..Num_Of_Consumables LOOP
-         Consumables_Array(i).Name := To_Unbounded_String(Get_Line(Items_File));
-         Consumables_Array(I).Description := To_Unbounded_String(Get_Line(Items_File));
-         Get(Item => Consumables_Array(i).Weight,        File => Items_File);
-         Get(Item => Consumables_Array(i).Stat_Value,    File => Items_File);
-         Get(Item => Consumables_Array(i).Heal_HP,       File => Items_File);
-         Get(Item => Consumables_Array(i).Attack_Boost,  File => Items_File);
-         Get(Item => Consumables_Array(i).Defense_Boost, File => Items_File);
-         Get(Item => Consumables_Array(i).Agility_Boost, File => Items_File);
-         Get(Item => Consumables_Array(I).Restore_MP, File => Items_File);
-         -- Push the file reader to the correct line for re-looping or for the weapons procedure to pick up at the correct line
-         Input_Buffer := To_Unbounded_String(Get_Line(Items_File));
+            Items_Array(I) := (Kind_Of_Item => Consumable,
+                               Name => To_Unbounded_String(Get_Line(Items_File)),
+                               Description =>To_Unbounded_String(Get_Line(Items_File)),
+                               Weight => Float'Value(Get_Line(Items_File)),
+                               Is_Consumable => True,
+                               Is_Weapon => False,
+                               Is_Armor => False,
+                               Heal_HP => Integer'Value(Get_Line(Items_File)),
+                               Attack_Boost => Integer'Value(Get_Line(Items_File)),
+                               Defense_Boost => Integer'Value(Get_Line(Items_File)),
+                               Agility_Boost => Integer'Value(Get_Line(Items_File)),
+                               Restore_MP => Integer'Value(Get_Line(Items_File)));
       END LOOP;
-   END Create_Consumables_List;
-
-   -- A procedure for printing the names, descriptions, and weights of all of the consumable items
-   PROCEDURE Print_Consumables IS
-   BEGIN
-      FOR i IN Integer RANGE 1..Num_Of_Consumables LOOP
-         Put(To_String(Consumables_Array(i).Name));
-         New_Line;
-         Put(To_String(Consumables_Array(i).Description));
-         New_Line;
-         Put(Item => "Weight: ");
-         Put(Item => Consumables_Array(i).Weight, Fore => 2, Aft => 1, Exp => 0);
-         New_Line;
-         New_Line;
+      -- Gets the WEAPONS part of the file
+      Input := To_Unbounded_String(Get_Line(Items_File));
+      -- Set a flag to assist in setting the Is_Weapon and Is_Armor flags
+      Item_Flag := True;
+      FOR I IN Integer RANGE Num_Of_Consumables + 1..Items_Array'Length LOOP
+         Items_Array(I) := (Kind_Of_Item => Weapon,
+                            Name => To_Unbounded_String(Get_Line(Items_File)),
+                            Description => To_Unbounded_String(Get_Line(Items_File)),
+                            Weight => Float'Value(Get_Line(Items_File)),
+                            Is_Consumable => False,
+                            Is_Weapon => Item_Flag,                           -- When the flag is true, the item is a weapon
+                            Is_Armor => NOT Item_Flag,                        -- Once the flag is false, the item is a piece of armor
+                            Attack => Integer'Value(Get_Line(Items_File)),
+                            Defense => Integer'Value(Get_Line(Items_File)),
+                            Speed => Integer'Value(Get_Line(Items_File)));
+      IF I = Num_Of_Weapons + Num_Of_Consumables THEN               -- If the start of the ARMOR part of the file is reached
+            Input := To_Unbounded_String(Get_Line(Items_File));        -- Gets the ARMOR line of the file
+            Item_Flag := False;                                       -- Sets the item flag to false indicating armor
+      END IF;
       END LOOP;
-   END Print_Consumables;
+   END Fill_Items_Array;
 
-   -- A procedure to load weapon information from items.txt into the weapon array
-   PROCEDURE Create_Weapons_List(Items_File : IN OUT File_Type) IS
+   -- Prints all information about each item
+   PROCEDURE Print_Items_Array IS
    BEGIN
-      Input_Buffer := To_Unbounded_String(Get_Line(Items_File));                     -- Skip the WEAPONS title in items.txt
-      FOR i IN Integer RANGE 1..Num_Of_Weapons LOOP
-         Weapons_Array(i).Name := To_Unbounded_String(Get_Line(Items_File));
-         Weapons_Array(i).Description := To_Unbounded_String(Get_Line(Items_File));
-         Get(Item => Weapons_Array(i).Weight, File => Items_File);
-         Get(Item => Weapons_Array(i).Attack, File => Items_File);
-         Get(Item => Weapons_Array(i).Speed,  File => Items_File);
-         Input_Buffer := To_Unbounded_String(Get_Line(Items_File));                  -- Another jump to the correct line
-      END LOOP;
-   END Create_Weapons_List;
-
-   -- A procedure to print all weapon names, descriptions, and weights
-   PROCEDURE Print_Weapons IS
-   BEGIN
-      FOR i IN Integer RANGE 1..Num_Of_Weapons LOOP
-         Put(To_String(Weapons_Array(i).Name));
+      FOR I IN Integer RANGE 1..Items_Array'Length LOOP
+         Put(To_String(Items_Array(I).Name));
          New_Line;
-         Put(To_String(Weapons_Array(i).Description));
+         Put(To_String(Items_Array(I).Description));
+         New_Line;         Put("Weight: ");
+         Put(Item => Items_Array(I).Weight, Aft => 1, Fore => 2, Exp => 0);
          New_Line;
-         Put("Weight: ");
-         Put(Item => Weapons_Array(i).Weight, Fore => 2, Aft => 1, Exp => 0);
+         Put("Is it consumable? ");
+         Put(Boolean'Image(Items_Array(I).Is_Consumable));
          New_Line;
+         Put("Is it a weapon? ");
+         Put(Boolean'Image(Items_Array(I).Is_Weapon));
          New_Line;
-      END LOOP;
-   END Print_Weapons;
-
-   -- A procedure to load armor information from items.txt into the armor array
-   PROCEDURE Create_Armor_List(Items_File : IN OUT File_Type) IS
-   BEGIN
-      Input_Buffer := To_Unbounded_String(Get_Line(Items_File));
-      FOR i IN Integer RANGE 1..Num_Of_Armor LOOP
-         Armor_Array(i).Name := To_Unbounded_String(Get_Line(Items_File));
-         Armor_Array(I).Description := To_Unbounded_String(Get_Line(Items_File));
-         Get(Item => Armor_Array(i).Weight,  File => Items_File);
-         Get(Item => Armor_Array(i).Armor,   File => Items_File);
-         Get(Item => Armor_Array(i).Speed,   File => Items_File);
-         IF i /= Num_Of_Armor THEN                                             -- Avoid jumping down a line if the end of the file has been reached
-            Input_Buffer := To_Unbounded_String(Get_Line(Items_File));
+         Put("Is it armor? ");
+         Put(Boolean'Image(Items_Array(I).Is_Armor));
+         New_Line;
+         IF Items_Array(I).Is_Consumable = True THEN
+            Put("Health Affect: ");
+            Put(Items_Array(I).Heal_HP, Width => 2);
+            New_Line;
+            Put("Attack Boost: ");
+            Put(Items_Array(I).Attack_Boost, Width => 2);
+            New_Line;
+            Put("Defense Boost: ");
+            Put(Items_Array(I).Defense_Boost, Width => 2);
+            New_Line;
+            Put("Agility Boost: ");
+            Put(Items_Array(I).Agility_Boost, Width => 2);
+            New_Line;
+            Put("Restore MP: ");
+            Put(Items_Array(I).Restore_MP, Width => 2);
+            New_Line;
+            New_Line;
+         ELSIF Items_Array(I).Is_Weapon = True OR ELSE Items_Array(I).Is_Armor THEN
+            Put("Attack Stat: ");
+            Put(Items_Array(I).Attack, Width => 2);
+            New_Line;
+            Put("Defense Stat: ");
+            Put(Items_Array(I).Defense, Width => 2);
+            New_Line;
+            Put("Speed Stat: ");
+            Put(Items_Array(I).Speed, Width => 2);
+            New_Line;
+            New_Line;
          END IF;
       END LOOP;
-   END Create_Armor_List;
-
-   -- A procedure to print all armor names, descriptions, and weights
-   PROCEDURE Print_Armor IS
-   BEGIN
-      FOR i IN Integer RANGE 1..Num_Of_Armor LOOP
-         Put(To_String(Armor_Array(i).Name));
-         New_Line;
-         Put(To_String(Armor_Array(i).Description));
-         New_Line;
-         Put(Item => "Weight: ");
-         Put(Item => Armor_Array(I).Weight, Fore => 2, Aft => 1, Exp => 0);
-         New_Line;
-         New_Line;
-      END LOOP;
-   END Print_Armor;
+   END Print_Items_Array;
 END Item_List;

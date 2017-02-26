@@ -11,22 +11,8 @@ BEGIN
         Mode => In_File,
         Name => "items.txt");
 
-   -- Print all consumable information
-   Put("CONSUMABLES");
-   New_Line;
-   Item_List.Create_Consumables_List(Items_File);
-   Item_List.Print_Consumables;
+   Item_List.Fill_Items_Array(Items_File);
 
-   -- Print all weapon information
-   Put("WEAPONS");
-   New_Line;
-   Item_List.Create_Weapons_List(Items_File);
-   Item_List.Print_Weapons;
-
-   -- Print all armor information
-   Put("ARMOR");
-   New_Line;
-   Item_List.Create_Armor_List(Items_File);
-   Item_List.Print_Armor;
+   Item_List.Print_Items_Array;
 
 END Item_List_Demo;
