@@ -1,4 +1,4 @@
-CONSUMABLES
+CONSUMABLE
 Potion
 Heals player HP by 10 points.
 0.0
@@ -7,6 +7,7 @@ Heals player HP by 10 points.
 0
 0
 0
+CONSUMABLE
 Spinach
 Temporarily increases strength by 10.
 0.0
@@ -15,13 +16,14 @@ Temporarily increases strength by 10.
 0
 0
 0
-WEAPONS
+WEAPON
 Rusty Sword
 A rusted sword you discovered on your journey. Not much, but a weapon's a weapon.
 0.0
 5
 0
 5
+WEAPON
 Broad Sword
 A standard blade. No rust... not bad!
 0.0
@@ -35,6 +37,7 @@ For those who don't care about protection.
 0
 2
 4
+ARMOR
 Bronze Armor
 For those who care slightly more about protection. Yeah... I'm looking at you, ya Cloth Tunic wearing whimp.
 0.0

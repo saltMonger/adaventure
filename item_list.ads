@@ -10,9 +10,6 @@ PACKAGE Item_List IS
       Name : Unbounded_String;
       Description : Unbounded_String;
       Weight : Float;
-      Is_Consumable : Boolean;
-      Is_Weapon     : Boolean;
-      Is_Armor      : Boolean;
       CASE Kind_Of_Item IS
          WHEN Consumable    => Heal_HP       : Integer;
                                Attack_Boost  : Integer;
