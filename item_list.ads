@@ -19,13 +19,19 @@ PACKAGE Item_List IS
          WHEN Weapon..Armor => Attack        : Integer;
                                Defense       : Integer;
                                Speed         : Integer;
+                               Is_Equipped   : Boolean;
       END CASE;
    END RECORD;
 
    -- Fill a master array with all items from an items file
-   PROCEDURE Fill_Items_Array(Items_File : IN OUT File_Type);
+   PROCEDURE Fill_Items_Array;
 
    -- Print all the items out using the filled array
    PROCEDURE Print_Items_Array;
+
+   -- Retrieve an item from the list by passing in an index associated with the item's spot in the list
+   -- For the game's purposes, a random integer should be passed in and a "random" item will then be returned
+   -- for the player to store in their backpack
+   FUNCTION Get_Item(Index : Integer) RETURN Item_Type;
 
 END Item_List;

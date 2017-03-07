@@ -18,8 +18,14 @@ PACKAGE BODY Item_List IS
    -- Fills in this order:  1. Consumables
    --                       2. Weapons
    --                       3. Armor
-   PROCEDURE Fill_Items_Array(Items_File : IN OUT File_Type) IS
+   PROCEDURE Fill_Items_Array IS
+      Items_File : File_Type;
    BEGIN
+      -- Open items.txt
+        Open(File => Items_File,
+        Mode => In_File,
+        Name => "items.txt");
+
       -- Starts a loop to grab consumable items
       FOR I IN Integer RANGE 1..Items_Array'Length LOOP
          Input := To_Unbounded_String(Get_Line(Items_File));         -- Gets the CONSUMABLES part of the file
@@ -40,7 +46,8 @@ PACKAGE BODY Item_List IS
                                Weight => Float'Value(Get_Line(Items_File)),
                                Attack => Integer'Value(Get_Line(Items_File)),
                                Defense => Integer'Value(Get_Line(Items_File)),
-                               Speed => Integer'Value(Get_Line(Items_File)));
+                               Speed => Integer'Value(Get_Line(Items_File)),
+                               Is_Equipped => False);
          ELSIF Input = "ARMOR" THEN
             Items_Array(I) := (Kind_Of_Item => Armor,
                                Name => To_Unbounded_String(Get_Line(Items_File)),
@@ -48,7 +55,8 @@ PACKAGE BODY Item_List IS
                                Weight => Float'Value(Get_Line(Items_File)),
                                Attack => Integer'Value(Get_Line(Items_File)),
                                Defense => Integer'Value(Get_Line(Items_File)),
-                               Speed => Integer'Value(Get_Line(Items_File)));
+                               Speed => Integer'Value(Get_Line(Items_File)),
+                               Is_Equipped => False);
          END IF;
       END LOOP;
    END Fill_Items_Array;
@@ -103,4 +111,10 @@ PACKAGE BODY Item_List IS
          New_Line;
       END LOOP;
    END Print_Items_Array;
+
+   -- Returns a record of an item from the array, associated with a passed in index
+   FUNCTION Get_Item(Index : Integer) RETURN Item_Type IS
+   BEGIN
+      RETURN Items_Array(Index);
+   END Get_Item;
 END Item_List;
