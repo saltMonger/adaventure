@@ -18,8 +18,14 @@ PACKAGE BODY Item_List IS
    -- Fills in this order:  1. Consumables
    --                       2. Weapons
    --                       3. Armor
-   PROCEDURE Fill_Items_Array(Items_File : IN OUT File_Type) IS
+   PROCEDURE Fill_Items_Array IS
+      Items_File : File_Type;
    BEGIN
+      -- Open items.txt
+        Open(File => Items_File,
+        Mode => In_File,
+        Name => "items.txt");
+
       -- Starts a loop to grab consumable items
       FOR I IN Integer RANGE 1..Items_Array'Length LOOP
          Input := To_Unbounded_String(Get_Line(Items_File));         -- Gets the CONSUMABLES part of the file
@@ -28,6 +34,7 @@ PACKAGE BODY Item_List IS
                                Name => To_Unbounded_String(Get_Line(Items_File)),
                                Description =>To_Unbounded_String(Get_Line(Items_File)),
                                Weight => Float'Value(Get_Line(Items_File)),
+                               Loot_Value => Float'Value(Get_Line(Items_File)),
                                Heal_HP => Integer'Value(Get_Line(Items_File)),
                                Attack_Boost => Integer'Value(Get_Line(Items_File)),
                                Defense_Boost => Integer'Value(Get_Line(Items_File)),
@@ -38,17 +45,21 @@ PACKAGE BODY Item_List IS
                                Name => To_Unbounded_String(Get_Line(Items_File)),
                                Description => To_Unbounded_String(Get_Line(Items_File)),
                                Weight => Float'Value(Get_Line(Items_File)),
+                               Loot_Value => Float'Value(Get_Line(Items_File)),
                                Attack => Integer'Value(Get_Line(Items_File)),
                                Defense => Integer'Value(Get_Line(Items_File)),
-                               Speed => Integer'Value(Get_Line(Items_File)));
+                               Speed => Integer'Value(Get_Line(Items_File)),
+                               Is_Equipped => False);
          ELSIF Input = "ARMOR" THEN
             Items_Array(I) := (Kind_Of_Item => Armor,
                                Name => To_Unbounded_String(Get_Line(Items_File)),
                                Description => To_Unbounded_String(Get_Line(Items_File)),
                                Weight => Float'Value(Get_Line(Items_File)),
+                               Loot_Value => Float'Value(Get_Line(Items_File)),
                                Attack => Integer'Value(Get_Line(Items_File)),
                                Defense => Integer'Value(Get_Line(Items_File)),
-                               Speed => Integer'Value(Get_Line(Items_File)));
+                               Speed => Integer'Value(Get_Line(Items_File)),
+                               Is_Equipped => False);
          END IF;
       END LOOP;
    END Fill_Items_Array;
@@ -64,6 +75,12 @@ PACKAGE BODY Item_List IS
          Put("Weight: ");
          Put(Item => Items_Array(I).Weight, Aft => 1, Fore => 2, Exp => 0);
          New_Line;
+         Put("Purchase Value: $");
+         Put(Item => Items_Array(I).Loot_Value * 1.1, Aft => 1, Fore => 2, Exp => 0);
+         New_Line;
+         Put("Trade Value: $");
+         Put(Item => Items_Array(I).Loot_Value * 0.75, Aft => 1, Fore => 2, Exp => 0);
+
          IF Items_Array(I).Kind_Of_Item = Consumable THEN
             Put("CONSUMABLE");
             New_Line;
@@ -103,4 +120,15 @@ PACKAGE BODY Item_List IS
          New_Line;
       END LOOP;
    END Print_Items_Array;
+
+   FUNCTION Get_Item_List_Length RETURN Integer IS
+   BEGIN
+      RETURN Items_Array'Length;
+   END Get_Item_List_Length;
+
+   -- Returns a record of an item from the array, associated with a passed in index
+   FUNCTION Get_Item(Index : Integer) RETURN Item_Type IS
+   BEGIN
+      RETURN Items_Array(Index);
+   END Get_Item;
 END Item_List;
