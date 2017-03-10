@@ -4,7 +4,6 @@ WITH Ada.Strings.Unbounded;   USE Ada.Strings.Unbounded;
 PACKAGE ACTOR IS
 
    TYPE Actor_Type IS (Player, Monster, NPC);
-
 -- Temporary debug types -  these will be filled in when we work on items/loot tables
    TYPE Inventory IS RECORD
       Name   :   Unbounded_String;
@@ -21,7 +20,7 @@ PACKAGE ACTOR IS
 
 
    -- A record to store information about a particular monster
-   TYPE Actor (Option : Actor_Type) IS record
+   TYPE Actor (Option : Actor_Type   :=   Monster) IS record
       Name   :   Unbounded_String   := To_Unbounded_String("");
       Level  :   Positive   := 1;
       HP   :   Integer   := 0;
@@ -32,16 +31,18 @@ PACKAGE ACTOR IS
       Dexterity   :   Integer   := 0;
       Intelligence   :   Integer   := 0;
       MP   :   Integer   := 0;
-
+      DamageDie   :   Integer   :=0;   --Only ever 2,4,6,8,10,12,20
+      DamageDice  :   Integer   :=1;   --Will be 1 or greater (Consider going to Natural)
       CASE Option IS
          WHEN Monster =>
             Experience_Value   :   Positive   := 1;
             Loot_Table_Pointer   : Loot_PTR   := null;
          WHEN Player =>
-            Experience   :   Positive;
-            Inventory   : Inventory_PTR;
-            Weapon   :   Integer;   -- dummy value
-            Armor   :   Integer;   -- dummy value
+            Experience   :   Natural   :=   0;
+            Backpack : Inventory_PTR   :=   null;
+            Weapon   :   Integer       := 1;   -- dummy value
+            Armor   :   Integer        := 1;   -- dummy value
+            Weight   :   Integer       := 50;   --max backpack weight value
          WHEN NPC =>
             Coins :   Integer;
       END CASE;

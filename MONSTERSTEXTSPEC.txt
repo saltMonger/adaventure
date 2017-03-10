@@ -1,0 +1,5 @@
+[] = Field Copied to Record
+{} = Not implemented yet
+
+[Monster Name]
+[Level] [HP] [AC] [STR] [CON] [DEX] [INT] [MP] [DamageDie (ex: d2)] [DamageDice (num DamageDie)] [Experience Value] {LootTableName}
