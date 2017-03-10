@@ -3,6 +3,7 @@ WITH Ada.Text_IO;                   USE Ada.Text_IO;
 WITH Ada.Integer_Text_IO;           USE Ada.Integer_Text_IO;
 WITH Ada.Float_Text_IO;             USE Ada.Float_Text_IO;
 WITH Ada.Strings.Unbounded;         USE Ada.Strings.Unbounded;
+WITH Ada.Characters.Handling;       USE Ada.Characters.Handling;
 WITH Ada.Unchecked_Deallocation;
 WITH Actor;                         USE Actor;
 
@@ -23,6 +24,8 @@ PACKAGE Backpack IS
    -- Counters to keep track of the backpack's current weight vs the allowable weight
    Allowable_Weight : CONSTANT Float := 100.0;
    Current_Weight   : Float := 0.0;
+
+   PROCEDURE Initialize_Backpack(Backpack : IN OUT Zipper; Bottom : IN OUT Zipper);
 
    -- Places an item found by the player in the backpack
    PROCEDURE Found_Item(Item_Record : Item_Type; Backpack : IN OUT Zipper; Bottom : IN OUT Zipper);

@@ -99,10 +99,16 @@ PACKAGE BODY Map_Generator IS
          Go := Random_Direction.Random(Direction);
          CASE Go IS
             WHEN 1 => Row := Row - 1;     -- When 1 move north
-            WHEN 2 => Col := Col + 1;     -- When 2 move east
-            WHEN 3 => Row := Row + 1;     -- When 3 move south
-            WHEN 4 => Col := Col - 1;     -- When 4 move west
-            WHEN OTHERS => Put("Error");  -- To satisfy this naggy compiler
+            WHEN 2 => IF New_Map(Row)(Col + 1).Cell_Type = Not_Room THEN
+                         Col := Col + 1;     -- When 2 move east
+                      END IF;
+            WHEN 3 => IF New_Map(Row + 1)(Col).Cell_Type = Not_Room THEN
+                         Row := Row + 1;     -- When 3 move south
+                      END IF;
+            WHEN 4 => IF New_Map(Row)(Col - 1).Cell_Type = Not_Room THEN
+                         Col := Col - 1;     -- When 4 move west
+                      END IF;
+            WHEN OTHERS => Put("Error");  -- To satisfy the naggy compiler
          END CASE;
 
          FOR I IN Integer RANGE 1..4 LOOP
@@ -126,37 +132,55 @@ PACKAGE BODY Map_Generator IS
                                Num_Of_Enemies => Temp_Num_Of_Enemies,
                                Num_Of_Items => Temp_Num_Of_Items,
                                Traveling_Salesman => Salesman_Flag);
+
+         Temp_Num_Of_Items := 0;
+         Temp_Num_Of_Enemies := 0;
+         Salesman_Flag := False;
       END LOOP;
    END Generate_Random_Map;
 
    -- Prints a representation of the randomly generated map
-   PROCEDURE Print_Map IS
+   PROCEDURE Print_Map(Row : Integer; Column : Integer) IS
    BEGIN
+      Put("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *");
+      New_Line;
       FOR I IN Integer RANGE 1..20 LOOP
+         Put("* ");
          FOR J IN Integer RANGE 1..20 LOOP
             IF New_Map(I)(J).Cell_Type = Room THEN
                -- Print the coordinates inside of the braces to match them up when printing room stats
                Put("[");
-               Put(Item => I, Width => 1);
-               Put(",");
-               Put(Item => J, Width => 1);
+               -- Put an X on the current room in the map to designate where the player is
+               IF I = Row AND J = Column THEN
+                  Put("X");
+               ELSE
+                  Put(" ");
+               END IF;
+
                Put("]");
             ELSE
-               Put("      ");
+               Put("   ");
             END IF;
          END LOOP;
+         Put("*");
       New_Line;
       END LOOP;
+      Put("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *");
+      New_Line;
    END Print_Map;
 
    PROCEDURE Print_Current_Room(Row : Integer; Column : Integer) IS
    BEGIN
-      Put("Current room is: ");
-      Put(Item => Row, Width => 1);
-      Put(", ");
-      Put(Item => Column, Width => 1);
       New_Line;
-      Put("__________________________________");
+      Put("----------------");
+      -- Check if a northern door in the room is necessary
+      IF Row > 1 AND THEN Check_If_Room(Row => Row - 1, Column => Column) = True THEN
+         Put("  ");
+      ELSE
+         Put("--");
+      END IF;
+
+      Put("----------------");
       New_Line;
       Put("|                                |");
       New_Line;
@@ -164,13 +188,47 @@ PACKAGE BODY Map_Generator IS
       Put(Item => New_Map(Row)(Column).Num_Of_Enemies, Width => 1);
       Put("           |");
       New_Line;
-      Put("| Number of Items: ");
+
+      -- Check if a western door is necessary
+      IF Column > 1 AND THEN Check_If_Room(Row => Row, Column => Column - 1) = True THEN
+         Put(" ");
+      ELSE
+         Put("|");
+      END IF;
+
+      Put(" Number of Items: ");
       Put(Item => New_Map(Row)(Column).Num_Of_Items, Width => 1);
-      Put("             |");
+      Put("             ");
+
+      -- Check if eastern door is necessary
+      IF Column < 20 AND THEN Check_If_Room(Row => Row, Column => Column + 1) = True THEN
+         Put(" ");
+      ELSE
+         Put("|");
+      END IF;
+
       New_Line;
       Put("|                                |");
       New_Line;
-      Put("_________________________________");
+      Put("| Traveling Salesman: ");
+
+      IF New_Map(Row)(Column).Traveling_Salesman = True THEN
+         Put("Yes        |");
+      ELSE
+         Put("No         |");
+      END IF;
+
+      New_Line;
+      Put("----------------");
+
+      -- Check if a southern door is necessary
+      IF Row < 20 AND THEN Check_If_Room(Row => Row + 1, Column => Column) = True THEN
+         Put("  ");
+      ELSE
+         Put("--");
+      END IF;
+
+      Put("----------------");
       New_Line;
       New_Line;
    END Print_Current_Room;
@@ -181,9 +239,22 @@ PACKAGE BODY Map_Generator IS
       Column := Starting_Column;
    END Get_Starting_Room;
 
-   FUNCTION Check_If_Room(Row : IN Integer; Column : IN Integer) RETURN Boolean IS
+   FUNCTION Take_Item(Row : Integer; Column : Integer) RETURN Boolean IS
    BEGIN
-      RETURN New_Map(Row)(Column).Cell_Type = Room;
+      IF New_Map(Row)(Column).Num_Of_Items > 0 THEN
+         New_Map(Row)(Column).Num_Of_Items := New_Map(Row)(Column).Num_Of_Items - 1;
+         RETURN True;
+      ELSE
+         RETURN False;
+      END IF;
+   END Take_Item;
+
+   FUNCTION Check_If_Room(Row : Integer; Column : Integer) RETURN Boolean IS
+   BEGIN
+      IF Row < 1 OR Column < 1  THEN         RETURN False;
+      ELSE
+         RETURN New_Map(Row)(Column).Cell_Type = Room;
+      END IF;
    END Check_If_Room;
 
 END Map_Generator;

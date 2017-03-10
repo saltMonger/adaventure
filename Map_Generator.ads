@@ -20,7 +20,7 @@ PACKAGE Map_Generator IS
    PROCEDURE Generate_Random_Map;
 
    -- Prints a representation of the map for the user to see
-   PROCEDURE Print_Map;
+   PROCEDURE Print_Map(Row : Integer; Column : Integer);
 
    -- Prints a representation of the room the player is currently in
    PROCEDURE Print_Current_Room(Row : Integer; Column : Integer);
@@ -28,5 +28,7 @@ PACKAGE Map_Generator IS
    -- Gets the first room of the map
    PROCEDURE Get_Starting_Room(Row : IN OUT Integer; Column : IN OUT Integer);
 
-   FUNCTION Check_If_Room(Row : IN Integer; Column : IN Integer) RETURN Boolean;
+   FUNCTION Take_Item(Row : Integer; Column : Integer) RETURN Boolean;
+
+   FUNCTION Check_If_Room(Row : Integer; Column : Integer) RETURN Boolean;
 END Map_Generator;

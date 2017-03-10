@@ -1,5 +1,16 @@
 PACKAGE BODY Backpack IS
 
+   PROCEDURE Initialize_Backpack(Backpack : IN OUT Zipper; Bottom : IN OUT Zipper) IS
+   BEGIN
+      Found_Item(Get_Item(2), Backpack, Bottom);
+
+      FOR I IN Integer RANGE 1..5 LOOP
+         Found_Item(Get_Item(1), Backpack, Bottom);
+      END LOOP;
+
+      Found_Item(Get_Item(3), Backpack, Bottom);
+      Found_Item(Get_Item(5), Backpack, Bottom);
+   END Initialize_Backpack;
    ----------------
    -- Found_Item --
    ----------------
@@ -89,7 +100,8 @@ PACKAGE BODY Backpack IS
       IF Backpack = NULL THEN
          Put("Your backpack is empty, you poor dingbat.");
          -- If the item is the only item left in the list
-      ELSIF Backpack.Item.Name = Name_Of_Item AND Bottom.Item.Name = Name_Of_Item THEN
+      ELSIF To_Lower(To_String(Backpack.Item.Name)) = To_Lower(To_String(Name_Of_Item))
+        AND To_Lower(To_String(Bottom.Item.Name)) = To_Lower(To_String(Name_Of_Item)) THEN
          IF Backpack.Num_Of_Item > 1 THEN
             Backpack.Num_Of_Item := Backpack.Num_Of_Item - 1;
             Current_Weight := Current_Weight - Backpack.Item.Weight;
@@ -100,7 +112,7 @@ PACKAGE BODY Backpack IS
             Backpack := NULL;
          END IF;
       -- If the throw away item is at the front
-      ELSIF Backpack.Item.Name = Name_Of_Item THEN
+      ELSIF To_Lower(To_String(Backpack.Item.Name)) = To_Lower(To_String(Name_Of_Item)) THEN
          IF Backpack.Num_Of_Item > 1 THEN
             Backpack.Num_Of_Item := Backpack.Num_Of_Item - 1;
             Current_Weight := Current_Weight - Backpack.Item.Weight;
@@ -112,7 +124,7 @@ PACKAGE BODY Backpack IS
             Backpack.Prev := NULL;
          END IF;
       -- If the throw away item is at the back
-      ELSIF Bottom.Item.Name = Name_Of_Item THEN
+      ELSIF To_Lower(To_String(Bottom.Item.Name)) = To_Lower(To_String(Name_Of_Item)) THEN
          IF Bottom.Num_Of_Item > 1 THEN
             Bottom.Num_Of_Item := Bottom.Num_Of_Item - 1;
             Current_Weight := Current_Weight - Bottom.Item.Weight;
@@ -126,7 +138,7 @@ PACKAGE BODY Backpack IS
       -- If the throw away item is in the middle
       ELSE
          WHILE Current /= NULL LOOP
-            IF Current.Item.Name = Name_Of_Item THEN
+            IF To_Lower(To_String(Current.Item.Name)) = To_Lower(To_String(Name_Of_Item)) THEN
                IF Current.Num_Of_Item > 1 THEN
                   Current.Num_Of_Item := Current.Num_Of_Item - 1;
                   Current_Weight := Current_Weight - Current.Item.Weight;
@@ -160,6 +172,8 @@ PACKAGE BODY Backpack IS
 
       -- Traverse the list and print out the item name, description, and number of that particular item currently in the backpack
       WHILE Current /= NULL LOOP
+         Put("****************************************");
+         New_Line;
          Put(To_String(Current.Item.Name));
          Put("     x");
          Put(Item => Current.Num_Of_Item, Width => 0);
@@ -175,6 +189,9 @@ PACKAGE BODY Backpack IS
                New_Line;
             END IF;
          END IF;
+         Put("Trade Value: $");
+         Put(Item => Current.Item.Loot_Value * 0.75, Fore => 2, Aft => 2, Exp => 0);
+         New_Line;
          Current := Current.Next;
       END LOOP;
    END Check_Backpack;

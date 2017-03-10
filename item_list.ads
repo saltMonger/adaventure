@@ -10,6 +10,7 @@ PACKAGE Item_List IS
       Name : Unbounded_String;
       Description : Unbounded_String;
       Weight : Float;
+      Loot_Value : Float;
       CASE Kind_Of_Item IS
          WHEN Consumable    => Heal_HP       : Integer;
                                Attack_Boost  : Integer;
@@ -28,6 +29,8 @@ PACKAGE Item_List IS
 
    -- Print all the items out using the filled array
    PROCEDURE Print_Items_Array;
+
+   FUNCTION Get_Item_List_Length RETURN Integer;
 
    -- Retrieve an item from the list by passing in an index associated with the item's spot in the list
    -- For the game's purposes, a random integer should be passed in and a "random" item will then be returned
