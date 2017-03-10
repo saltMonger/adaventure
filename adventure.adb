@@ -6,6 +6,7 @@ WITH Map_Generator;                  USE Map_Generator;
 WITH Backpack;                       USE Backpack;
 WITH Item_List;                      USE Item_List;
 WITH Actor;                          USE Actor;
+WITH EncounterPackage;               USE EncounterPackage;
 
 
 ------------------------------------------
@@ -22,6 +23,9 @@ WITH Actor;                          USE Actor;
    -- THE INITIALIZE BACKPACK PROCEDURE WILL NEED MODIFIED TO EQUIP THE CLOTH TUNIC AND RUSTY SWORD AT THE START OF THE GAME
 
 PROCEDURE Adventure IS
+
+   Player1 : Actor.Actor(Option => Player);
+   Save : File_Type;
 
    -- Setting up a package for a random index associated with an item from the Item_List package
    SUBTYPE Item_List_Range IS Integer RANGE 1..Get_Item_List_Length;
@@ -79,6 +83,11 @@ PROCEDURE Adventure IS
 
 BEGIN
 
+   Open(File => Save, Mode => In_File, Name =>  "player.txt");
+   Actor.Create_Actor(Save, Player1, Player);
+   Display_Actor_Stats(Player1, Player);
+   Close(Save);
+
    -- Compiles an array of items from information from a file
    Fill_Items_Array;
 
@@ -116,7 +125,7 @@ BEGIN
          -- 'b' opens the player backpack
          WHEN 'b' => Open_Backpack;
          -- 'e' attempts to pick up any available items the room may have
-         WHEN 'e' => IF Take_Item(Row => Room_Coordinate_X, Column => Room_Coordinate_Y) = True THEN
+         WHEN 'i' => IF Take_Item(Row => Room_Coordinate_X, Column => Room_Coordinate_Y) = True THEN
                         Temp_Item_Number := Random_Item.Random(Item_Index);
                         Put("You found a ");
                         Put(To_String(Get_Item(Temp_Item_Number).Name));
@@ -124,6 +133,12 @@ BEGIN
                         Found_Item(Item_Record => Get_Item(Temp_Item_Number), Backpack => Backpack, Bottom => Bottom);
                      ELSE            -- In case the player tries to pick up an item when the room contains no items
                         Put("This room holds nothing of value.");
+                     END IF;
+         WHEN 'e' => -- START ENCOUNTER
+                     IF Fight_Enemy(Row => Room_Coordinate_X, Column => Room_Coordinate_Y) = True THEN
+                        EncounterPackage.RandomEncounter(Player1);
+                     ELSE
+                        Put("You're trying to fight... no one?");
                      END IF;
          -- 'w' checks if there is a room to the north and if there is, it moves the player to that room
          WHEN 'w' => IF Check_If_Room(Room_Coordinate_X - 1, Room_Coordinate_Y) = True THEN

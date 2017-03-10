@@ -249,6 +249,16 @@ PACKAGE BODY Map_Generator IS
       END IF;
    END Take_Item;
 
+   FUNCTION Fight_Enemy(Row : Integer; Column : Integer) RETURN Boolean IS
+   BEGIN
+      IF New_Map(Row)(Column).Num_Of_Enemies > 0 THEN
+         New_Map(Row)(Column).Num_Of_Enemies := New_Map(Row)(Column).Num_Of_Enemies - 1;
+         RETURN True;
+      ELSE
+         RETURN False;
+      END IF;
+   END Fight_Enemy;
+
    FUNCTION Check_If_Room(Row : Integer; Column : Integer) RETURN Boolean IS
    BEGIN
       IF Row < 1 OR Column < 1  THEN         RETURN False;
