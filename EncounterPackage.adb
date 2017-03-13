@@ -15,10 +15,10 @@ PROCEDURE PlayerDoDamage(Player1   :   Actor.ACTOR; EArray   :   IN OUT Enemy_Ar
          DamageUtils.RollAttack(Player1.Dexterity, CriticalHit, AttackRollValue);
          IF(AttackRollValue > EArray(TargetNumber).AC) THEN
             Ada.Text_IO.Put_Line("Player hit!");
-            EArray(TargetNumber).HP := EArray(TargetNumber).HP - DamageUtils.RollDamage(Player1.DamageDie, Player1.DamageDice, Player1.Strength);
+            EArray(TargetNumber).Current_HP := EArray(TargetNumber).Current_HP - DamageUtils.RollDamage(Player1.DamageDie, Player1.DamageDice, Player1.Strength);
          ELSIF(CriticalHit = True) THEN
             Ada.Text_IO.Put_Line("Player CRIT!");
-            EArray(TargetNumber).HP := EArray(TargetNumber).HP - 2 * DamageUtils.RollDamage(Player1.DamageDie, Player1.DamageDice, Player1.Strength);
+            EArray(TargetNumber).Current_HP := EArray(TargetNumber).Current_HP - 2 * DamageUtils.RollDamage(Player1.DamageDie, Player1.DamageDice, Player1.Strength);
          ELSE
          Ada.Text_IO.Put_Line("Player missed!");
          END IF;
@@ -92,7 +92,7 @@ PROCEDURE PlayerDoDamage(Player1   :   Actor.ACTOR; EArray   :   IN OUT Enemy_Ar
       Count   :   Integer   :=   0;
    BEGIN
       FOR I IN Integer RANGE 1..EArray'Length LOOP
-         IF(EArray(I).HP <= 0) THEN
+         IF(EArray(I).Current_HP <= 0) THEN
             Count   :=   Count + 1;
          END IF;
       END LOOP;
@@ -126,7 +126,7 @@ PROCEDURE PlayerDoDamage(Player1   :   Actor.ACTOR; EArray   :   IN OUT Enemy_Ar
          --TODO: REWRITE SO THAT IT JUST CHECKS THE ARRAY
          IF(CheckEnemyDeath(EArray)) THEN
             State   :=   EnemyDeath;
-         ELSIF(Player1.HP <= 0) THEN
+         ELSIF(Player1.Current_HP <= 0) THEN
             State   :=   PlayerDeath;
          ELSE
             State   :=   Ongoing;      --unnecessary
@@ -142,10 +142,10 @@ PROCEDURE PlayerDoDamage(Player1   :   Actor.ACTOR; EArray   :   IN OUT Enemy_Ar
             DamageUtils.RollAttack(Current.all.Act.Dexterity, CriticalHit, AttackRollValue);
             IF(AttackRollValue > Player1.AC) THEN
                Ada.Text_IO.Put_Line("Enemy hit!");
-               Player1.HP := Player1.HP - DamageUtils.RollDamage(Current.all.Act.DamageDie, Current.all.Act.DamageDice, Current.all.Act.Strength);
+               Player1.Current_HP := Player1.Current_HP - DamageUtils.RollDamage(Current.all.Act.DamageDie, Current.all.Act.DamageDice, Current.all.Act.Strength);
             ELSIF(CriticalHit = True) THEN
                Ada.Text_IO.Put_Line("Enemy CRIT!");
-               Player1.HP := Player1.HP - 2 * DamageUtils.RollDamage(Current.all.Act.DamageDie, Current.all.Act.DamageDice, Current.all.Act.Strength);
+               Player1.Current_HP := Player1.Current_HP - 2 * DamageUtils.RollDamage(Current.all.Act.DamageDie, Current.all.Act.DamageDice, Current.all.Act.Strength);
             ELSE
                Ada.Text_IO.Put_Line("Enemy missed!");
             END IF;
@@ -159,13 +159,13 @@ PROCEDURE PlayerDoDamage(Player1   :   Actor.ACTOR; EArray   :   IN OUT Enemy_Ar
          FOR I IN Integer RANGE 1..EArray'Length LOOP
             Ada.Text_IO.Put(Item => To_String(EArray(I).Name));
             Ada.Text_IO.Put(" is at ");
-            Ada.Integer_Text_IO.Put(Item => EArray(I).HP, Width => 1);
+            Ada.Integer_Text_IO.Put(Item => EArray(I).Current_HP, Width => 1);
             Ada.Text_IO.Put_Line("HP");
             Ada.Text_IO.New_Line;
          END LOOP;
             Ada.Text_IO.Put(Item => To_String(Player1.Name));
             Ada.Text_IO.Put(" is at ");
-            Ada.Integer_Text_IO.Put(Item => Player1.HP, Width => 1);
+            Ada.Integer_Text_IO.Put(Item => Player1.Current_HP, Width => 1);
             Ada.Text_IO.Put_Line("HP");
 
 
