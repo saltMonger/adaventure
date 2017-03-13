@@ -7,7 +7,8 @@ PACKAGE BODY ACTOR IS
    BEGIN
          Act.Name := To_Unbounded_String(Get_Line(Actor_Stats));
          Get(File => Actor_Stats, Item => Act.Level);
-         Get(File => Actor_Stats, Item => Act.HP);
+         Get(File => Actor_Stats, Item => Act.Max_HP);
+         Act.Current_HP := Act.Max_HP;
          Get(File => Actor_Stats, Item => Act.Strength);
          Get(File => Actor_Stats, Item => Act.Constitution);
          Get(File => Actor_Stats, Item => Act.Dexterity);
@@ -21,14 +22,7 @@ PACKAGE BODY ACTOR IS
          Get(File => Actor_Stats, Item => Act.Experience_Value);
          --some case statement to point to a loot table
       ELSIF(Option = Player) THEN
-         Ada.Text_IO.Put_Line("Creating Player Actor");
          Get(File => Actor_Stats, Item => Act.Experience);
-         Ada.Text_IO.Put_Line("EXP");
-         Get(File => Actor_Stats, Item => Act.Weapon);
-         Ada.Text_IO.Put_Line("WEAPON");
-         Get(File => Actor_Stats, Item => Act.Armor);
-         Ada.Text_IO.Put_Line("ARMOR");
-         --need an inventory loader for the player
       END IF;
    END Create_Actor;
 
@@ -41,7 +35,9 @@ PACKAGE BODY ACTOR IS
       Put(Item => Act.Level, Width => 5);
       New_Line;
       Put("HP: ");
-      Put(Item => Act.HP, Width => 8);
+      Put(Item => Act.Current_HP, Width => 2);
+      Put(Item => "/");
+      Put(Item => Act.Max_HP, Width => 1);
       New_Line;
       Put("STR: ");
       Put(Item => Act.Strength, Width => 2);
@@ -73,8 +69,11 @@ PACKAGE BODY ACTOR IS
          Put(Item => Act.Experience, Width => 5);
          New_Line;
 
-         Put("Max Weight: ");
-         Put(Item => Act.Weight, Width => 3);
+         Put(Item => "Weapon: ");
+         Put(Item => To_String(Act.Weapon.Name));
+         New_Line;
+         Put(Item => "Armor: ");
+         Put(Item => To_String(Act.Armor.Name));
          New_Line;
       END IF;
 

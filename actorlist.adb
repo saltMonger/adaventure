@@ -43,7 +43,7 @@ PACKAGE BODY Actorlist IS
    BEGIN
       WHILE(Temp_Node /= NULL) LOOP
          IF(Temp_Node.All.Act.Option = Player) THEN
-            IF(Temp_Node.All.Act.HP > 0) THEN
+            IF(Temp_Node.All.Act.Current_HP > 0) THEN
                RETURN False;
             ELSE
                RETURN True;
@@ -61,7 +61,7 @@ PACKAGE BODY Actorlist IS
    BEGIN
       WHILE(Temp_Node /= NULL) LOOP
          IF(Temp_Node.All.Act.Option = Monster) THEN
-            IF(Temp_Node.All.Act.HP <= 0) THEN
+            IF(Temp_Node.All.Act.Current_HP <= 0) THEN
                Counter   :=   Counter + 1;
             END IF;
          END IF;

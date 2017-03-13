@@ -64,20 +64,22 @@ PACKAGE BODY Backpack IS
    -- Use_Item --
    --------------
 
-   PROCEDURE Use_Item (Name_Of_Item : Unbounded_String; Backpack : IN OUT Zipper; Bottom : IN OUT Zipper; Player_Stats : IN OUT Actor.Actor) IS
+   PROCEDURE Use_Item (Name_Of_Item : Unbounded_String; Backpack : IN OUT Zipper; Bottom : IN OUT Zipper; Stats : IN OUT Integer_Array) IS
       Current : Zipper := Backpack;
    BEGIN
       -- Traverse the list, checking if the current item is consumable and whether or not the item is in the backpack
       WHILE Current /= NULL LOOP
          -- Once found, deliver the stat boosts/restoratives to the user
-         IF Current.Item.Name = Name_Of_Item AND Current.Item.Kind_Of_Item = Consumable THEN
-            Player_Stats.HP := Player_Stats.HP + Current.Item.Heal_HP;
-            Player_Stats.Strength := Player_Stats.Strength + Current.Item.Attack_Boost;
-            Player_Stats.Constitution := Player_Stats.Constitution + Current.Item.Defense_Boost;
-            Player_Stats.Dexterity := Player_Stats.Dexterity + Current.Item.Agility_Boost;
-            Player_Stats.MP := Player_Stats.MP + Current.Item.Restore_MP;
+         IF To_Lower(To_String(Current.Item.Name)) = To_Lower(To_String(Name_Of_Item)) AND Current.Item.Kind_Of_Item = Consumable THEN
+            Stats(1) := Current.Item.Heal_HP;
+            Put(Stats(1));
+            Stats(2) := Current.Item.Attack_Boost;
+            Stats(3) := Current.Item.Defense_Boost;
+            Stats(4) := Current.Item.Agility_Boost;
+            Stats(5) := Current.Item.Restore_MP;
             -- Then remove the item from the backpack
             Throw_Away_Item(Name_Of_Item => Name_Of_Item, Backpack => Backpack, Bottom => Bottom);
+            RETURN;
          END IF;
          -- If an item in the list has been reached that isn't a consumable, then there must be no/or no remaining
          -- consumables in the list. In this case, break out of the procedure.
@@ -196,55 +198,34 @@ PACKAGE BODY Backpack IS
       END LOOP;
    END Check_Backpack;
 
-   FUNCTION Equip_Weapon(Name_Of_Desired_Weapon : Unbounded_String; Name_Of_Current_Weapon : Unbounded_String; Backpack : Zipper) RETURN Item_Type IS
-      Current : Zipper := Backpack;
-      Desired_Weapon : Item_Type;
+   PROCEDURE Equip(Name_Of_Desired_Equipment : Unbounded_String; Current_Weapon : IN OUT Item_Type; Current_Armor : IN OUT Item_Type; Bottom : Zipper) IS
+      Equip_Ptr : Zipper := Bottom;
+      Unequip_Ptr   : Zipper := Bottom;
    BEGIN
-      -- Traverse the list until the armor section or end of the list is reached
-      WHILE Current /= NULL LOOP
-         -- If the desired weapon is already equipped and it has been reached in the list, return it so it stays equipped
-         IF Name_Of_Desired_Weapon = Name_Of_Current_Weapon AND Current.Item.Name = Name_Of_Desired_Weapon THEN
-            Current.Item.Is_Equipped := True;   -- In case this equip call is the first equip of the game
-            RETURN Current.Item;
-         -- If the desired weapon has been reached, set it's flag to true, and store it in the local variable to return later
-         ELSIF Current.Item.Name = Name_Of_Desired_Weapon AND Current.Item.Kind_Of_Item = Weapon THEN
-            Current.Item.Is_Equipped := True;
-            Desired_Weapon := Current.Item;
-         -- If the current weapon is reached, set it's equipped flag to false
-         ELSIF Current.Item.Name = Name_Of_Current_Weapon THEN
-            Current.Item.Is_Equipped := False;
+      WHILE Equip_Ptr /= NULL AND THEN Equip_Ptr.Item.Kind_Of_Item /= Consumable LOOP
+         IF To_Lower(To_String(Equip_Ptr.Item.Name)) = To_Lower(To_String(Name_Of_Desired_Equipment)) THEN
+            IF Equip_Ptr.Item.Kind_Of_Item = Weapon THEN
+               Equip_Ptr.Item.Is_Equipped := True;
+               Current_Weapon := Equip_Ptr.Item;
+            ELSIF Equip_Ptr.Item.Kind_Of_Item = Armor THEN
+               Equip_Ptr.Item.Is_Equipped := True;
+               Current_Armor := Equip_Ptr.Item;
+            END IF;
+            WHILE Unequip_Ptr /= NULL AND THEN Unequip_Ptr.Item.Kind_Of_Item /= Consumable LOOP
+               IF Unequip_Ptr.Item.Is_Equipped = True AND THEN Unequip_Ptr.Item.Kind_Of_Item = Equip_Ptr.Item.Kind_Of_Item
+                  AND THEN To_Lower(To_String(Equip_Ptr.Item.Name)) /= To_Lower(To_String(Unequip_Ptr.Item.Name)) THEN
+                  Unequip_Ptr.Item.Is_Equipped := False;
+                  RETURN;
+               END IF;
+               Unequip_Ptr := Unequip_Ptr.Prev;
+            END LOOP;
+            RETURN;
          END IF;
-         Current := Current.Next;
+         Equip_Ptr := Equip_Ptr.Prev;
       END LOOP;
-
-      -- Return the newly equipped weapon to store in the player's record
-      RETURN Desired_Weapon;
-   END Equip_Weapon;
-
-   FUNCTION Equip_Armor(Name_Of_Desired_Armor : Unbounded_String; Name_Of_Current_Armor : Unbounded_String; Bottom : Zipper) RETURN Item_Type IS
-      Current : Zipper := Bottom;
-      Desired_Armor : Item_Type;
-   BEGIN
-      -- Traverse the list
-      WHILE Current /= NULL LOOP
-         -- If the desired armor is already equipped and it has been reached in the list, return it so it stays equipped
-         IF Name_Of_Desired_Armor = Name_Of_Current_Armor AND Current.Item.Name = Name_Of_Desired_Armor THEN
-            Current.Item.Is_Equipped := True;   -- In case this is the first equip of the game
-            RETURN Current.Item;
-         -- If the desired armor has been reached, set it's flag to true, and store it in the local variable to return later
-         ELSIF Current.Item.Name = Name_Of_Desired_Armor AND Current.Item.Kind_Of_Item = Armor THEN
-            Current.Item.Is_Equipped := True;
-            Desired_Armor := Current.Item;
-         -- If the current armor is reached, set it's equipped flag to false
-         ELSIF Current.Item.Name = Name_Of_Current_Armor THEN
-            Current.Item.Is_Equipped := False;
-         END IF;
-         -- Move backwards through the list
-         Current := Current.Prev;
-      END LOOP;
-      -- Return the desired armor
-      RETURN Desired_Armor;
-   END Equip_Armor;
+      Put("You don't own a piece of equipment that matches your request.");
+      New_Line;
+   END Equip;
 
    -- Returns TRUE if the current weight is LESS than the Allowable Weight.
    -- Returns FALSE if the backpack has TOO MUCH weight in it.

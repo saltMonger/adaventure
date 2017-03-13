@@ -1,14 +1,12 @@
 WITH Ada.Text_IO;             USE Ada.Text_IO;
 WITH Ada.Strings.Unbounded;   USE Ada.Strings.Unbounded;
+WITH Backpack;                USE Backpack;
+WITH Item_List;               USE Item_List;
 
 PACKAGE ACTOR IS
 
    TYPE Actor_Type IS (Player, Monster, NPC);
 -- Temporary debug types -  these will be filled in when we work on items/loot tables
-   TYPE Inventory IS RECORD
-      Name   :   Unbounded_String;
-      Value   :   Integer;
-   END RECORD;
 
    TYPE Loot_Table IS RECORD
       Name   :   Unbounded_String;
@@ -16,14 +14,13 @@ PACKAGE ACTOR IS
    END RECORD;
 
    Type Loot_PTR is access Loot_Table;
-   Type Inventory_PTR is access Inventory;
-
 
    -- A record to store information about a particular monster
    TYPE Actor (Option : Actor_Type   :=   Monster) IS record
       Name   :   Unbounded_String   := To_Unbounded_String("");
       Level  :   Positive   := 1;
-      HP   :   Integer   := 0;
+      Max_HP   :   Integer   := 0;
+      Current_HP : Integer := 0;
       AC   :   Integer   := 0;
       ACMOD   :   Integer   := 0;
       Strength :   Integer   := 0;
@@ -39,10 +36,10 @@ PACKAGE ACTOR IS
             Loot_Table_Pointer   : Loot_PTR   := null;
          WHEN Player =>
             Experience   :   Natural   :=   0;
-            Backpack : Inventory_PTR   :=   null;
-            Weapon   :   Integer       := 1;   -- dummy value
-            Armor   :   Integer        := 1;   -- dummy value
-            Weight   :   Integer       := 50;   --max backpack weight value
+            Backpack :   Zipper  :=   NULL;
+            Bottom   :   Zipper  := NULL;
+            Weapon   :   Item_Type;
+            Armor    :   Item_Type;
          WHEN NPC =>
             Coins :   Integer;
       END CASE;

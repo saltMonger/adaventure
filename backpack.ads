@@ -5,7 +5,7 @@ WITH Ada.Float_Text_IO;             USE Ada.Float_Text_IO;
 WITH Ada.Strings.Unbounded;         USE Ada.Strings.Unbounded;
 WITH Ada.Characters.Handling;       USE Ada.Characters.Handling;
 WITH Ada.Unchecked_Deallocation;
-WITH Actor;                         USE Actor;
+
 
 PACKAGE Backpack IS
 
@@ -18,6 +18,9 @@ PACKAGE Backpack IS
       Next : Zipper;
       Prev : Zipper;
    END RECORD;
+
+   SUBTYPE Array_Range IS Integer RANGE 1..5;
+   TYPE Integer_Array IS ARRAY (Array_Range) OF Integer;
 
    PROCEDURE Free IS NEW Ada.Unchecked_Deallocation(Object => Pouch, Name => Zipper);
 
@@ -32,7 +35,7 @@ PACKAGE Backpack IS
 
    -- Uses an item in the backpack. If the item specified is not in the backpack or is non-existent, the procedure will display a message
    -- letting the user know there is no such item in inventory.
-   PROCEDURE Use_Item(Name_Of_Item : Unbounded_String; Backpack : IN OUT Zipper; Bottom : IN OUT Zipper; Player_Stats : IN OUT Actor.Actor);
+   PROCEDURE Use_Item(Name_Of_Item : Unbounded_String; Backpack : IN OUT Zipper; Bottom : IN OUT Zipper; Stats : IN OUT Integer_Array);
 
    -- Throws away an item in the backpack
    PROCEDURE Throw_Away_Item(Name_Of_Item : Unbounded_String; Backpack : IN OUT Zipper; Bottom : IN OUT Zipper);
@@ -42,11 +45,7 @@ PACKAGE Backpack IS
 
    -- Assists in equipping a weapon. Returns a weapon to the player to equip
    -- and sets an equip boolean associated with the item's record
-   FUNCTION Equip_Weapon(Name_Of_Desired_Weapon : Unbounded_String; Name_Of_Current_Weapon : Unbounded_String; Backpack : Zipper) RETURN Item_Type;
-
-   -- Assists in equipping a piece of armor. Returns an armor set to the player to equip
-   -- and sets an equip boolean associated with the item's record
-   FUNCTION Equip_Armor(Name_Of_Desired_Armor : Unbounded_String; Name_Of_Current_Armor : Unbounded_String; Bottom : Zipper) RETURN Item_Type;
+   PROCEDURE Equip(Name_Of_Desired_Equipment : Unbounded_String; Current_Weapon : IN OUT Item_Type; Current_Armor : IN OUT Item_Type; Bottom : Zipper);
 
    -- Checks the total weight to make sure the player hasn't gone over the allowable backpack weight
    -- Returns TRUE if the weight is FINE, returns FALSE if the weight is TOO MUCH
