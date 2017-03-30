@@ -41,7 +41,7 @@ PACKAGE Backpack IS
    PROCEDURE Throw_Away_Item(Name_Of_Item : Unbounded_String; Backpack : IN OUT Zipper; Bottom : IN OUT Zipper);
 
    -- Prints the contents of the backpack
-   PROCEDURE Check_Backpack(Backpack : Zipper);
+   PROCEDURE Check_Backpack(Backpack : Zipper; Player_HP : Integer);
 
    -- Assists in equipping a weapon. Returns a weapon to the player to equip
    -- and sets an equip boolean associated with the item's record

@@ -33,4 +33,6 @@ PACKAGE Map_Generator IS
    FUNCTION Fight_Enemy(Row : Integer; Column : Integer) RETURN Boolean;
 
    FUNCTION Check_If_Room(Row : Integer; Column : Integer) RETURN Boolean;
+
+   FUNCTION Check_For_Salesman(Row : Integer; Column : Integer) RETURN Boolean;
 END Map_Generator;

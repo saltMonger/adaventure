@@ -267,4 +267,9 @@ PACKAGE BODY Map_Generator IS
       END IF;
    END Check_If_Room;
 
+   FUNCTION Check_For_Salesman(Row : Integer; Column : Integer) RETURN Boolean IS
+   BEGIN
+      RETURN New_Map(Row)(Column).Traveling_Salesman;
+   END Check_For_Salesman;
+
 END Map_Generator;

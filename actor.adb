@@ -40,19 +40,40 @@ PACKAGE BODY ACTOR IS
       Put(Item => Act.Max_HP, Width => 1);
       New_Line;
       Put("STR: ");
-      Put(Item => Act.Strength, Width => 2);
+      IF (Option = Player) THEN
+         Put(Item => Act.Strength - Act.Weapon.Attack - Act.Armor.Attack, Width => 2);
+         Put(Item => "[");
+         Put(Item => Act.Strength, Width => 2);
+         Put(Item => "]");
+      ELSE
+         Put(Item => Act.Strength, Width => 2);
+      END IF;
       New_Line;
       Put("CON: ");
-      Put(Item => Act.Constitution, Width => 3);
+      IF (Option = Player) THEN
+         Put(Item => Act.Constitution - Act.Weapon.Defense - Act.Armor.Defense, Width => 2);
+         Put(Item => "[");
+         Put(Item => Act.Constitution, Width => 2);
+         Put(Item => "]");
+      ELSE
+         Put(Item => Act.Constitution, Width => 2);
+      END IF;
       New_Line;
       Put("DEX: ");
-      Put(Item => Act.Dexterity, Width => 3);
+      IF (Option = Player) THEN
+         Put(Item => Act.Dexterity - Act.Weapon.Speed - Act.Armor.Speed, Width => 2);
+         Put(Item => "[");
+         Put(Item => Act.Dexterity, Width => 2);
+         Put(Item => "]");
+      ELSE
+         Put(Item => Act.Dexterity, Width => 2);
+      END IF;
       New_Line;
       Put("INT: ");
-      Put(Item => Act.Intelligence, Width => 3);
+      Put(Item => Act.Intelligence, Width => 2);
       New_Line;
       Put("AC: ");
-      Put(Item => Act.AC, Width => 3);
+      Put(Item => Act.AC, Width => 2);
       New_Line;
       Put("Damage: ");
       Put(Item => Act.DamageDice, Width => 1);

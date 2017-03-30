@@ -163,7 +163,7 @@ PACKAGE BODY Backpack IS
    -- Check_Backpack --
    --------------------
 
-   PROCEDURE Check_Backpack (Backpack : Zipper) IS
+   PROCEDURE Check_Backpack (Backpack : Zipper; Player_HP : Integer) IS
       Current : Zipper := Backpack;
    BEGIN
 
@@ -196,6 +196,13 @@ PACKAGE BODY Backpack IS
          New_Line;
          Current := Current.Next;
       END LOOP;
+      Put("******************************************");
+      New_Line;
+      Put("Current Weight: ");
+      Put(Item => Current_Weight, Aft => 1, Fore => 3, Exp => 0);
+      Put("/");
+      Put(Item => Allowable_Weight, Aft => 1, Fore => 3, Exp => 0);
+      New_Line;
    END Check_Backpack;
 
    PROCEDURE Equip(Name_Of_Desired_Equipment : Unbounded_String; Current_Weapon : IN OUT Item_Type; Current_Armor : IN OUT Item_Type; Bottom : Zipper) IS
@@ -231,6 +238,6 @@ PACKAGE BODY Backpack IS
    -- Returns FALSE if the backpack has TOO MUCH weight in it.
    FUNCTION Check_Weight RETURN Boolean IS
    BEGIN
-      RETURN Allowable_Weight > Current_Weight;
+      RETURN Allowable_Weight >= Current_Weight;
    END Check_Weight;
 END Backpack;
