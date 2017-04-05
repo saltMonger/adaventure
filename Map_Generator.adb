@@ -261,7 +261,12 @@ PACKAGE BODY Map_Generator IS
 
    FUNCTION Check_If_Room(Row : Integer; Column : Integer) RETURN Boolean IS
    BEGIN
-      IF Row < 1 OR Column < 1  THEN         RETURN False;
+      -- Northern and western boundary check
+      IF Row < 1 OR Column < 1 THEN
+         RETURN False;
+      -- Southern and eastern boundary check
+      ELSIF Row < 20 OR Column < 20 THEN
+         RETURN False;
       ELSE
          RETURN New_Map(Row)(Column).Cell_Type = Room;
       END IF;
