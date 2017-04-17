@@ -5,23 +5,41 @@ WITH Actor;  USE Actor;
 WITH Actorlist; Use Actorlist;
 WITH DamageUtils;
 WITH Ada.Characters.Handling;
+WITH Interfaces.C;                    USE Interfaces.C;
+WITH Unbounded_Queue;
+
+
 
 PACKAGE BODY EncounterPackage IS
+
+  FUNCTION Sys(Arg : Char_Array) RETURN Integer;
+   PRAGMA Import(C, Sys, "system");
+   Ret_Val : Integer;
+
+   Package ActorL is new Unbounded_Queue(Integer);
 
 PROCEDURE PlayerDoDamage(Player1   :   Actor.ACTOR; EArray   :   IN OUT Enemy_Array; TargetNumber   :   IN   Integer) IS
       CriticalHit   :   Boolean   :=   False;
       AttackRollValue   :   Integer;
+      DamageRollValue : Integer;
    BEGIN
          DamageUtils.RollAttack(Player1.Dexterity, CriticalHit, AttackRollValue);
          IF(AttackRollValue > EArray(TargetNumber).AC) THEN
-            Ada.Text_IO.Put_Line("Player hit!");
-            EArray(TargetNumber).Current_HP := EArray(TargetNumber).Current_HP - DamageUtils.RollDamage(Player1.DamageDie, Player1.DamageDice, Player1.Strength);
+            DamageRollValue   :=   DamageUtils.RollDamage(Player1.DamageDie, Player1.DamageDice, Player1.Strength);
+            EArray(TargetNumber).Current_HP := EArray(TargetNumber).Current_HP - DamageRollValue;
+            Ada.Text_IO.Put("Player hit for ");
+            Ada.Integer_Text_IO.Put(Item => DamageRollValue, Width => 1);
+            Ada.Text_IO.Put(".");
          ELSIF(CriticalHit = True) THEN
-            Ada.Text_IO.Put_Line("Player CRIT!");
-            EArray(TargetNumber).Current_HP := EArray(TargetNumber).Current_HP - 2 * DamageUtils.RollDamage(Player1.DamageDie, Player1.DamageDice, Player1.Strength);
+            DamageRollValue   :=   2 * DamageUtils.RollDamage(Player1.DamageDie, Player1.DamageDice, Player1.Strength);
+            EArray(TargetNumber).Current_HP := EArray(TargetNumber).Current_HP - DamageRollValue;
+            Ada.Text_IO.Put("CRITICAL HIT! dealt ");
+            Ada.Integer_Text_IO.Put(Item => DamageRollValue, Width => 1);
+            Ada.Text_IO.Put(".");
          ELSE
          Ada.Text_IO.Put_Line("Player missed!");
-         END IF;
+      END IF;
+      Ada.Text_IO.New_Line;
    END PlayerDoDamage;
 
 
@@ -31,6 +49,30 @@ PROCEDURE PlayerDoDamage(Player1   :   Actor.ACTOR; EArray   :   IN OUT Enemy_Ar
       TargetNumber   :   Integer   :=   0;
    BEGIN
       Ada.Text_IO.Put_Line("Who shall you attack?");
+
+      FOR I IN Integer RANGE 1..EArray'Length LOOP
+         IF (EArray(I).Current_HP < 1) THEN
+            Ada.Text_IO.Put("[");
+            Ada.Integer_Text_IO.Put(Item => I, Width => 1);
+            Ada.Text_IO.Put("]  ");
+
+            Ada.Text_IO.Put(To_String(EArray(I).Name));
+            Ada.Text_IO.Put(" is UNCONSCIOUS!");
+            Ada.Text_IO.New_Line;
+         ELSE
+            Ada.Text_IO.Put("[");
+            Ada.Integer_Text_IO.Put(Item => I, Width => 1);
+            Ada.Text_IO.Put("]  ");
+
+            Ada.Text_IO.Put(To_String(EArray(I).Name));
+            Ada.Text_IO.Put(" is at ");
+            Ada.Integer_Text_IO.Put(Item => Earray(I).Current_HP, Width => 1);
+            Ada.Text_IO.Put(" health.");
+            Ada.Text_IO.New_Line;
+         END IF;
+      END LOOP;
+      
+
       WHILE(KeepChecking) LOOP
          Ada.Text_IO.Get_Immediate(C);
          CASE(c) IS
@@ -46,10 +88,17 @@ PROCEDURE PlayerDoDamage(Player1   :   Actor.ACTOR; EArray   :   IN OUT Enemy_Ar
          when '9' => TargetNumber   :=   9;
          when '0' => TargetNumber   :=   10;
             WHEN OTHERS => KeepChecking   :=   False;
+            TargetNumber   :=   0;
          END CASE;
          IF(TargetNumber /= 0 AND TargetNumber <= EArray'Length) THEN
-            PlayerDoDamage(Player1, EArray, TargetNumber);
-            KeepChecking   :=   False;
+            IF(EArray(TargetNumber).Current_HP < 0) THEN
+               Ada.Text_IO.Put_Line("That enemy is unconscious!");
+               KeepChecking   :=   True;
+            ELSE
+               PlayerDoDamage(Player1, EArray, TargetNumber);
+               KeepChecking   :=   False;
+            END IF;
+
          ELSE
             KeepChecking   :=   True;
             Ada.Text_IO.Put_Line("That enemy doesn't exist! Try again.");
@@ -109,17 +158,32 @@ PROCEDURE PlayerDoDamage(Player1   :   Actor.ACTOR; EArray   :   IN OUT Enemy_Ar
       TextGC   :   Character;
       CriticalHit   :   Boolean;
       AttackRollValue   :   Integer;   --Determines if enemy hits
+      DamageRollValue   :   Integer;
       Act_List   :   Actorlist.Actor_List;
-      Current   :   node_ptr   :=   Null;
+      Current   :   Node_Ptr   :=   NULL;
+      CurrentI   :   Integer;
+      C   :   Character;   --Takes the throw-away character for slowing the encounter down
+      Queue_List   :   ActorL.Queue_Type;
    BEGIN
+      -------
+      --TODO: Support add in order from initiative roll.
+      -------
+
       --populate
       FOR I IN Integer RANGE 1..EArray'Length LOOP
          Actorlist.Add(Act_List, EArray(I));
-         Ada.Integer_Text_IO.Put(Item => I);
-         Ada.Text_IO.New_Line;
+         ActorL.Enqueue(Queue_List, I);
       END LOOP;
+
+      --add actor
       Actorlist.Add(Act_List, Player1);
-      Current   :=   Act_List.Head;
+      ActorL.Enqueue(Queue_List, -1);
+
+      Ada.Integer_Text_IO.Put(Item => EArray'Length, Width => 1);
+      Ada.Text_IO.Put(" enemies stand before you!");
+      Ada.Text_IO.Put("Press any key to continue.");
+      Ada.Text_IO.Get_Immediate(C);
+
 
       WHILE(State = Ongoing) LOOP
          --Check Liveliness of the Battle
@@ -132,41 +196,46 @@ PROCEDURE PlayerDoDamage(Player1   :   Actor.ACTOR; EArray   :   IN OUT Enemy_Ar
             State   :=   Ongoing;      --unnecessary
          END IF;
          --End Battle Check
-
+         ActorL.Dequeue(Queue_List, CurrentI);
+         Ret_Val := Sys(To_C("cls"));
 
          --EnemyRound
-         IF(Current = NULL) THEN
-            --return to begin to beginning
-            Current   :=   Act_List.Head;
-         Elsif(Current.All.Act.Option = Monster) THEN
-            DamageUtils.RollAttack(Current.all.Act.Dexterity, CriticalHit, AttackRollValue);
-            IF(AttackRollValue > Player1.AC) THEN
-               Ada.Text_IO.Put_Line("Enemy hit!");
-               Player1.Current_HP := Player1.Current_HP - DamageUtils.RollDamage(Current.all.Act.DamageDie, Current.all.Act.DamageDice, Current.all.Act.Strength);
-            ELSIF(CriticalHit = True) THEN
-               Ada.Text_IO.Put_Line("Enemy CRIT!");
-               Player1.Current_HP := Player1.Current_HP - 2 * DamageUtils.RollDamage(Current.all.Act.DamageDie, Current.all.Act.DamageDice, Current.all.Act.Strength);
+         IF(CurrentI /= -1) THEN
+            DamageUtils.RollAttack(EArray(CurrentI).Dexterity, CriticalHit, AttackRollValue);
+            IF(EArray(CurrentI).Current_HP > 0) THEN
+               IF(AttackRollValue > Player1.AC) THEN
+                  DamageRollValue   := DamageUtils.RollDamage(EArray(CurrentI).DamageDie, EArray(CurrentI).DamageDice, EArray(CurrentI).Strength);
+                  Ada.Text_IO.Put("Enemy hit for ");
+                  Ada.Integer_Text_IO.Put(Item => DamageRollValue, Width => 1);
+                  Player1.Current_HP := Player1.Current_HP - DamageRollValue;
+               ELSIF(CriticalHit) THEN
+                  DamageRollValue   :=   2 * DamageUtils.RollDamage(EArray(CurrentI).DamageDie, EArray(CurrentI).DamageDice, EArray(CurrentI).Strength);
+                  Ada.Text_IO.Put("CRITICAL HIT! dealt ");
+                  Ada.Integer_Text_IO.Put(Item => DamageRollValue, Width => 1);
+                  Player1.Current_HP := Player1.Current_HP - DamageRollValue;
+               ELSE
+                  Ada.Text_IO.Put_Line("Enemy missed!");
+               END IF;
             ELSE
-               Ada.Text_IO.Put_Line("Enemy missed!");
+               Ada.Text_IO.Put("This enemy is unconscious.");
             END IF;
-            Current   :=   Current.Next;
-         ELSIF(Current.All.Act.Option = Player) THEN
-         -- Player Round (Needs to be slightly different)
-            PlayerInteraction(Player1, EArray);
-            Current   :=   Current.Next;
-         END IF;
 
-         FOR I IN Integer RANGE 1..EArray'Length LOOP
-            Ada.Text_IO.Put(Item => To_String(EArray(I).Name));
-            Ada.Text_IO.Put(" is at ");
-            Ada.Integer_Text_IO.Put(Item => EArray(I).Current_HP, Width => 1);
-            Ada.Text_IO.Put_Line("HP");
+         ELSIF(CurrentI = -1) THEN
+               PlayerInteraction(Player1, EArray);
+            END IF;
+
+         ActorL.Enqueue(Queue_List, CurrentI);
+
+
             Ada.Text_IO.New_Line;
-         END LOOP;
             Ada.Text_IO.Put(Item => To_String(Player1.Name));
             Ada.Text_IO.Put(" is at ");
             Ada.Integer_Text_IO.Put(Item => Player1.Current_HP, Width => 1);
             Ada.Text_IO.Put_Line("HP");
+
+         Ada.Text_IO.New_Line;
+         Ada.Text_IO.Put("Press any key to continue.");
+         Ada.Text_IO.Get_Immediate(C);
 
 
       END LOOP;
@@ -174,6 +243,7 @@ PROCEDURE PlayerDoDamage(Player1   :   Actor.ACTOR; EArray   :   IN OUT Enemy_Ar
       IF(State = PlayerDeath) THEN
          --display gameover here.  if we're doing a really hardcore rougelike, delete the player save
          Ada.Text_IO.Put_Line("You're a corpse!");
+         Player1.Current_HP := 1;
          NULL;
       ELSIF(State = EnemyDeath) THEN
          --award XP to player character
