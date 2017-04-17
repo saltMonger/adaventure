@@ -10,14 +10,13 @@ WITH Actor;                           USE Actor;                                
 WITH EncounterPackage;                USE EncounterPackage;                      -- A package to handle battle encounters
 WITH Salesman;                        USE Salesman;                              -- A package to handle buying/selling with a travelling salesman
 WITH Interfaces.C;                    USE Interfaces.C;                          -- A package to handle passing commands to the operating system
+WITH Alchemy_Tree;                    USE Alchemy_Tree;                          -- A package to handle an alchemy tree for synthesizing items
 
 ------------------------------------------
 ----- THE GAME'S MAIN PROCEDURE ----------
 ------------------------------------------
 
 -- SOME THINGS THAT WILL NEED MODIFIED
--- TERMINAL REPAINTING WILL NEED IMPLEMENTED
--- AN EASIER WAY OF GETTING THE STARTING ITEMS FOR THE BACKPACK WILL NEED IMPLEMENTED
 -- WE MAY WANT TO LIMIT THE KINDS OF ITEMS THE PLAYER CAN GET SO THEY CANT GET A TON OF RUSTY SWORDS AND SO THERE ARENT TOO MANY EMPTY ROOMS
 
 PROCEDURE Adventure IS
@@ -26,7 +25,7 @@ PROCEDURE Adventure IS
    Player1 : Actor.Actor (Option => Player);
    Save    : File_Type;
 
-   -- Needed to pass commands to the operating system so a java program, that handles audio, can be executed simultaneously
+   -- Needed to pass commands to the operating system for screen clearing
    FUNCTION Sys(Arg : Char_Array) RETURN Integer;
    PRAGMA Import(C, Sys, "system");
    Ret_Val : Integer;
@@ -36,7 +35,7 @@ PROCEDURE Adventure IS
    PACKAGE Random_Item IS NEW Ada.Numerics.Discrete_Random(Item_List_Range);
    Item_Index : Random_Item.Generator;
 
-   Stats_Holder : Backpack.Integer_Array;
+   Stats_Holder : Backpack.Integer_Array;   -- An array to store the stat changes coming from an item
 
    Player_Input      : Character;                                      -- To get the player's key input
    Player_Command    : Unbounded_String;                               -- To store player command input
@@ -44,6 +43,10 @@ PROCEDURE Adventure IS
    Room_Coordinate_Y : Integer;                                        -- A coordinate corresponding to the column-value of the current room in the map
    Temp_Item_Number  : Integer;                                        -- Temporary storage for the index value of an item from the Item_List package
    User_Message      : Unbounded_String := To_Unbounded_String("");    -- A string to store messages to the user after the screen repaints
+   Ingredient1       : Unbounded_String;                               -- An ingredient for synthesis
+   Ingredient2       : Unbounded_String;                               -- An ingredient for synthesis
+   Creation          : Item_Type;                                      -- An item created from synthesis
+   Synth_Tree        : Alchemy_Tree.Node_Ptr;                          -- A pointer to a tree that holds recipes
 
    -- A procedure to remove equipment stats from the player when a piece of equipment is removed
    PROCEDURE Remove_Equip_Stats(Player1 : IN OUT Actor.Actor) IS
@@ -64,7 +67,7 @@ PROCEDURE Adventure IS
    -- A procedure to open the backpack and perform operations on player inventory
    PROCEDURE Open_Backpack IS
    BEGIN
-      Check_Backpack(Backpack => Player1.Backpack, Player_HP => Player1.Current_HP);         -- Display the backpack
+      Check_Backpack(Backpack => Player1.Backpack, Player_HP => Player1.Current_HP, Battle_Flag => False);         -- Display the backpack
 
       -- Recieve and respond to player commands
       WHILE Player1.Backpack /= NULL LOOP
@@ -92,8 +95,8 @@ PROCEDURE Adventure IS
             -- and pass it into the Throw_Away_Item procedure
          ELSIF Length(Player_Command) > 8 AND THEN To_Lower(Slice(Player_Command, 1, 7)) = To_Unbounded_String("discard") THEN
                Throw_Away_Item(Backpack => Player1.Backpack,
-               Name_Of_Item => To_Unbounded_String(Slice(Player_Command, 9, Length(Player_Command))),
-               Bottom => Player1.Bottom);
+                               Name_Of_Item => To_Unbounded_String(Slice(Player_Command, 9, Length(Player_Command))),
+                               Bottom => Player1.Bottom);
             --If the command was to "EQUIP" then check the remainder of the command by passing it into the Equip_Armor or Equip_Weapon procedures
          ELSIF Length(Player_Command) > 6 AND THEN To_Lower(Slice(Player_Command, 1, 5)) = To_Unbounded_String("equip") THEN
             -- Remove the current weapon's stat effects
@@ -105,6 +108,32 @@ PROCEDURE Adventure IS
                   Bottom => Player1.Bottom);
             -- Add the new weapon's stat effects
             Apply_Equip_Stats(Player1);
+         -- If the command was to synthesize, find the recipe, and create the item if the recipe is valid
+         ELSIF To_Lower(To_String(Player_Command)) = To_Unbounded_String("synth") THEN
+            Put("Ingredient 1: ");
+            Ingredient1 := To_Unbounded_String(Get_Line);
+            Put("Ingredient 2: ");
+            Ingredient2 := To_Unbounded_String(Get_Line);
+            IF Ingredient1 = Ingredient2 AND THEN Check_For_Item(Backpack => Player1.Backpack, Item_Name => Ingredient1, How_Many => 2) = False THEN
+               User_Message := To_Unbounded_String("You don't have those/enough ingredients");
+            ELSIF Check_For_Item(Backpack => Player1.Backpack, Item_Name => Ingredient1, How_Many => 1) = False AND THEN
+                  Check_For_Item(Backpack => Player1.Backpack, Item_Name => Ingredient2, How_Many => 1) = False THEN
+               User_Message := To_Unbounded_String("You don't have those/enough ingredients");
+            ELSE
+            -- Find the recipe and create the item
+               Synthesize(Ingredient1 => Ingredient1, Ingredient2 => Ingredient2, Creation => Creation, Root => Synth_Tree);
+               IF Creation.Name = To_Unbounded_String("") THEN
+                  User_Message := To_Unbounded_String("That is not a valid recipe");
+               ELSE
+                  Found_Item(Item_Record => Creation, Backpack => Player1.Backpack, Bottom => Player1.Bottom);
+                  Throw_Away_Item(Backpack => Player1.Backpack,      -- Discard the first item in the recipe
+                            Name_Of_Item => Ingredient1,
+                            Bottom => Player1.Bottom);
+                  Throw_Away_Item(Backpack => Player1.Backpack,      -- Discard the second item in the recipe
+                            Name_Of_Item => Ingredient2,
+                            Bottom => Player1.Bottom);
+               END IF;
+            END IF;
             -- If the command was to exit, return to the map
          ELSIF To_Lower(To_String(Player_Command)) = "exit" THEN
             IF Check_Weight = False THEN
@@ -118,17 +147,13 @@ PROCEDURE Adventure IS
 
          New_Line;
          Ret_Val := Sys(To_C("cls"));
-         Check_Backpack(Backpack => Player1.Backpack, Player_HP => Player1.Current_HP);      -- Redisplay the backpack, in case any user operations may have altered the contents
+         Check_Backpack(Backpack => Player1.Backpack, Player_HP => Player1.Current_HP, Battle_Flag => False);      -- Redisplay the backpack, in case any user operations may have altered the contents
          Put(To_String(User_Message));
          User_Message := To_Unbounded_String("");
       END LOOP;
    END Open_Backpack;
 
 BEGIN
-   -- Start the music
-   --Ret_Val := Sys(To_C("javac GameAudio.java"));
-   --Ret_Val := Sys(To_C("java GameAudio"));
-
    -- Create the player character
    Open(File => Save,
         Mode => In_File,
@@ -138,6 +163,9 @@ BEGIN
 
    -- Compiles an array of items from information from a file
    Fill_Items_Array;
+
+   -- Fill in the tree with the synth_items file
+   Build_Tree(File_Name => To_Unbounded_String("synth_items.txt"), Root => Synth_Tree);
 
    -- Reset the random seed for choosing items found in the field
    Random_Item.Reset(Item_Index);
@@ -195,13 +223,14 @@ BEGIN
 
       -- Respond to the player's character input
       CASE Player_Input IS
-         WHEN 't' =>
-            IF Check_For_Salesman(Row => Room_Coordinate_X, Column => Room_Coordinate_Y) THEN
-               SalesmanSays(Player => Player1);
+         -- TRAVELING SALESMAN IS NOT FINISHED
+        -- WHEN 't' =>
+           -- IF Check_For_Salesman(Row => Room_Coordinate_X, Column => Room_Coordinate_Y) THEN
+            --   SalesmanSays(Player => Player1);
                --Salesman_Menu;
-            ELSE
-               User_Message := To_Unbounded_String("There's nothing to buy here. Or anyone to buy from for that matter...");
-            END IF;
+           -- ELSE
+           --    User_Message := To_Unbounded_String("There's nothing to buy here. Or anyone to buy from for that matter...");
+           -- END IF;
          WHEN 'm' =>
             Display_Actor_Stats(Player1, Player);
             Put("Press any key to continue: ");
