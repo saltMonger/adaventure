@@ -71,7 +71,7 @@ PROCEDURE PlayerDoDamage(Player1   :   Actor.ACTOR; EArray   :   IN OUT Enemy_Ar
             Ada.Text_IO.New_Line;
          END IF;
       END LOOP;
-      
+
 
       WHILE(KeepChecking) LOOP
          Ada.Text_IO.Get_Immediate(C);
@@ -217,7 +217,11 @@ PROCEDURE PlayerDoDamage(Player1   :   Actor.ACTOR; EArray   :   IN OUT Enemy_Ar
                   Ada.Text_IO.Put_Line("Enemy missed!");
                END IF;
             ELSE
-               Ada.Text_IO.Put("This enemy is unconscious.");
+               Ada.Text_IO.Put("[");
+               Ada.Integer_Text_IO.Put(Item => CurrentI, Width => 1);
+               Ada.Text_IO.Put("]  ");
+               Ada.Text_IO.Put(To_String(EArray(CurrentI).Name));
+               Ada.Text_IO.Put(" is unconscious.");
             END IF;
 
          ELSIF(CurrentI = -1) THEN
