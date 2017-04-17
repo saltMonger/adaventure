@@ -93,7 +93,7 @@ PACKAGE BODY Map_Generator IS
 
          Temp_Num_Of_Items := 0;
          Temp_Num_Of_Enemies := 0;
-         Salesman_Flag := False;
+         --Salesman_Flag := False;
 
          Random_Direction.Reset(Direction);
          Go := Random_Direction.Random(Direction);
@@ -119,7 +119,7 @@ PACKAGE BODY Map_Generator IS
             IF Dweller = 1 THEN
                Temp_Num_Of_Enemies := 0;
                Temp_Num_Of_Items := 0;
-               Salesman_Flag := True;
+               --Salesman_Flag := True;
                EXIT;
             ELSIF Dweller = 2 OR ELSE Dweller = 3 THEN
                Temp_Num_Of_Items := Temp_Num_Of_Items + 1;
@@ -135,7 +135,7 @@ PACKAGE BODY Map_Generator IS
 
          Temp_Num_Of_Items := 0;
          Temp_Num_Of_Enemies := 0;
-         Salesman_Flag := False;
+         --Salesman_Flag := False;
       END LOOP;
    END Generate_Random_Map;
 
@@ -209,14 +209,14 @@ PACKAGE BODY Map_Generator IS
 
       New_Line;
       Put("|                                |");
-      New_Line;
-      Put("| Traveling Salesman: ");
+      --New_Line;
+      --Put("| Traveling Salesman: ");
 
-      IF New_Map(Row)(Column).Traveling_Salesman = True THEN
-         Put("Yes        |");
-      ELSE
-         Put("No         |");
-      END IF;
+      --IF New_Map(Row)(Column).Traveling_Salesman = True THEN
+         --Put("Yes        |");
+      --ELSE
+         --Put("No         |");
+      --END IF;
 
       New_Line;
       Put("----------------");
@@ -261,7 +261,12 @@ PACKAGE BODY Map_Generator IS
 
    FUNCTION Check_If_Room(Row : Integer; Column : Integer) RETURN Boolean IS
    BEGIN
-      IF Row < 1 OR Column < 1  THEN         RETURN False;
+      -- Northern and western boundary check
+      IF Row < 1 OR Column < 1 THEN
+         RETURN False;
+      -- Southern and eastern boundary check
+      ELSIF Row > 20 OR Column > 20 THEN
+         RETURN False;
       ELSE
          RETURN New_Map(Row)(Column).Cell_Type = Room;
       END IF;

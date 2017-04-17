@@ -41,11 +41,14 @@ PACKAGE Backpack IS
    PROCEDURE Throw_Away_Item(Name_Of_Item : Unbounded_String; Backpack : IN OUT Zipper; Bottom : IN OUT Zipper);
 
    -- Prints the contents of the backpack
-   PROCEDURE Check_Backpack(Backpack : Zipper; Player_HP : Integer);
+   PROCEDURE Check_Backpack(Backpack : Zipper; Player_HP : Integer; Battle_Flag : Boolean);
 
    -- Assists in equipping a weapon. Returns a weapon to the player to equip
    -- and sets an equip boolean associated with the item's record
    PROCEDURE Equip(Name_Of_Desired_Equipment : Unbounded_String; Current_Weapon : IN OUT Item_Type; Current_Armor : IN OUT Item_Type; Bottom : Zipper);
+
+   -- Check the backpack to see if the item exists
+   FUNCTION Check_For_Item(Backpack : Zipper; Item_Name : Unbounded_String; How_Many : Integer) RETURN Boolean;
 
    -- Checks the total weight to make sure the player hasn't gone over the allowable backpack weight
    -- Returns TRUE if the weight is FINE, returns FALSE if the weight is TOO MUCH

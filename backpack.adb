@@ -163,7 +163,7 @@ PACKAGE BODY Backpack IS
    -- Check_Backpack --
    --------------------
 
-   PROCEDURE Check_Backpack (Backpack : Zipper; Player_HP : Integer) IS
+   PROCEDURE Check_Backpack (Backpack : Zipper; Player_HP : Integer; Battle_Flag : Boolean) IS
       Current : Zipper := Backpack;
    BEGIN
 
@@ -233,6 +233,19 @@ PACKAGE BODY Backpack IS
       Put("You don't own a piece of equipment that matches your request.");
       New_Line;
    END Equip;
+
+   FUNCTION Check_For_Item(Backpack : Zipper; Item_Name : Unbounded_String; How_Many : Integer) RETURN Boolean IS
+      Current : Zipper := Backpack;
+   BEGIN
+      WHILE Current /= NULL LOOP
+         IF To_Lower(To_String(Current.Item.Name)) = To_Lower(To_String(Item_Name)) AND THEN Current.Num_Of_Item > How_Many THEN
+            RETURN True;
+         END IF;
+         Current := Current.Next;
+      END LOOP;
+
+      RETURN False;
+   END Check_For_Item;
 
    -- Returns TRUE if the current weight is LESS than the Allowable Weight.
    -- Returns FALSE if the backpack has TOO MUCH weight in it.
