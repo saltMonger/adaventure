@@ -35,17 +35,19 @@ PACKAGE Backpack IS
 
    -- Uses an item in the backpack. If the item specified is not in the backpack or is non-existent, the procedure will display a message
    -- letting the user know there is no such item in inventory.
-   PROCEDURE Use_Item(Name_Of_Item : Unbounded_String; Backpack : IN OUT Zipper; Bottom : IN OUT Zipper; Stats : IN OUT Integer_Array);
+   PROCEDURE Use_Item(Name_Of_Item : Unbounded_String; Backpack : IN OUT Zipper; Bottom : IN OUT Zipper;
+                      Stats : IN OUT Integer_Array; User_Message : IN OUT Unbounded_String);
 
    -- Throws away an item in the backpack
-   PROCEDURE Throw_Away_Item(Name_Of_Item : Unbounded_String; Backpack : IN OUT Zipper; Bottom : IN OUT Zipper);
+   PROCEDURE Throw_Away_Item(Name_Of_Item : Unbounded_String; Backpack : IN OUT Zipper; Bottom : IN OUT Zipper; User_Message : IN OUT Unbounded_String);
 
    -- Prints the contents of the backpack
    PROCEDURE Check_Backpack(Backpack : Zipper; Player_HP : Integer; Battle_Flag : Boolean);
 
    -- Assists in equipping a weapon. Returns a weapon to the player to equip
    -- and sets an equip boolean associated with the item's record
-   PROCEDURE Equip(Name_Of_Desired_Equipment : Unbounded_String; Current_Weapon : IN OUT Item_Type; Current_Armor : IN OUT Item_Type; Bottom : Zipper);
+   PROCEDURE Equip(Name_Of_Desired_Equipment : Unbounded_String; Current_Weapon : IN OUT Item_Type; Current_Armor : IN OUT Item_Type;
+                   Bottom : Zipper; User_Message : IN OUT Unbounded_String);
 
    -- Check the backpack to see if the item exists
    FUNCTION Check_For_Item(Backpack : Zipper; Item_Name : Unbounded_String; How_Many : Integer) RETURN Boolean;

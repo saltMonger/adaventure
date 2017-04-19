@@ -64,13 +64,14 @@ PACKAGE BODY Backpack IS
    -- Use_Item --
    --------------
 
-   PROCEDURE Use_Item (Name_Of_Item : Unbounded_String; Backpack : IN OUT Zipper; Bottom : IN OUT Zipper; Stats : IN OUT Integer_Array) IS
+   PROCEDURE Use_Item (Name_Of_Item : Unbounded_String; Backpack : IN OUT Zipper; Bottom : IN OUT Zipper;
+                       Stats : IN OUT Integer_Array; User_Message : IN OUT Unbounded_String) IS
       Current : Zipper := Backpack;
    BEGIN
       -- Traverse the list, checking if the current item is consumable and whether or not the item is in the backpack
       WHILE Current /= NULL LOOP
          -- Once found, deliver the stat boosts/restoratives to the user
-         IF To_Lower(To_String(Current.Item.Name)) = To_Lower(To_String(Name_Of_Item)) AND Current.Item.Kind_Of_Item = Consumable THEN
+         IF To_Lower(To_String(Current.Item.Name)) = To_Lower(To_String(Name_Of_Item)) AND Current.Item.Kind_Of_Item = CONSUMABLE THEN
             Stats(1) := Current.Item.Heal_HP;
             Put(Stats(1));
             Stats(2) := Current.Item.Attack_Boost;
@@ -78,24 +79,23 @@ PACKAGE BODY Backpack IS
             Stats(4) := Current.Item.Agility_Boost;
             Stats(5) := Current.Item.Restore_MP;
             -- Then remove the item from the backpack
-            Throw_Away_Item(Name_Of_Item => Name_Of_Item, Backpack => Backpack, Bottom => Bottom);
+            Throw_Away_Item(Name_Of_Item => Name_Of_Item, Backpack => Backpack, Bottom => Bottom, User_Message => User_Message);
             RETURN;
-         END IF;
-         -- If an item in the list has been reached that isn't a consumable, then there must be no/or no remaining
-         -- consumables in the list. In this case, break out of the procedure.
-         IF Current.Item.Kind_Of_Item /= Consumable THEN
-            Put("'" & To_String(Name_Of_Item) & "' is not in your backpack to use.");
+         ELSIF To_Lower(To_String(Current.Item.Name)) = To_Lower(To_String(Name_Of_Item)) AND Current.Item.Kind_Of_Item /= CONSUMABLE THEN
+            User_Message := To_Unbounded_String("'" & To_String(Name_Of_Item) & "' is not a useable item.");
             RETURN;
          END IF;
          Current := Current.Next;
       END LOOP;
+      User_Message := To_Unbounded_String("'" & To_String(Name_Of_Item) & "' is not in your backpack to use.");
+      RETURN;
    END Use_Item;
 
    ---------------------
    -- Throw_Away_Item --
    ---------------------
 
-   PROCEDURE Throw_Away_Item (Name_Of_Item : Unbounded_String; Backpack : IN OUT Zipper; Bottom : IN OUT Zipper) IS
+   PROCEDURE Throw_Away_Item (Name_Of_Item : Unbounded_String; Backpack : IN OUT Zipper; Bottom : IN OUT Zipper; User_Message : IN OUT Unbounded_String) IS
       Current : Zipper := Backpack;
    BEGIN
       -- If the list is empty
@@ -108,6 +108,12 @@ PACKAGE BODY Backpack IS
             Backpack.Num_Of_Item := Backpack.Num_Of_Item - 1;
             Current_Weight := Current_Weight - Backpack.Item.Weight;
          ELSE
+            IF Backpack.Item.Kind_Of_Item = WEAPON OR Backpack.Item.Kind_Of_Item = ARMOR THEN
+               IF Backpack.Item.Is_Equipped THEN
+                  User_Message := To_Unbounded_String("You can't discard a weapon/armor that is equipped");
+                  RETURN;
+               END IF;
+            END IF;
             Current_Weight := Current_Weight - Backpack.Item.Weight;
             Free(Backpack);
             Bottom := NULL;
@@ -119,6 +125,12 @@ PACKAGE BODY Backpack IS
             Backpack.Num_Of_Item := Backpack.Num_Of_Item - 1;
             Current_Weight := Current_Weight - Backpack.Item.Weight;
          ELSE
+            IF Backpack.Item.Kind_Of_Item = WEAPON OR Backpack.Item.Kind_Of_Item = ARMOR THEN
+               IF Backpack.Item.Is_Equipped THEN
+                  User_Message := To_Unbounded_String("You can't discard a weapon/armor that is equipped");
+                  RETURN;
+               END IF;
+            END IF;
             Backpack := Backpack.Next;
             Backpack.Prev.Next := NULL;
             Current_Weight := Current_Weight - Backpack.Prev.Item.Weight;
@@ -131,6 +143,12 @@ PACKAGE BODY Backpack IS
             Bottom.Num_Of_Item := Bottom.Num_Of_Item - 1;
             Current_Weight := Current_Weight - Bottom.Item.Weight;
          ELSE
+            IF Bottom.Item.Kind_Of_Item = WEAPON OR Bottom.Item.Kind_Of_Item = ARMOR THEN
+               IF Bottom.Item.Is_Equipped THEN
+                  User_Message := To_Unbounded_String("You can't discard a weapon/armor that is equipped");
+                  RETURN;
+               END IF;
+            END IF;
             Bottom := Bottom.Prev;
             Bottom.Next.Prev := NULL;
             Current_Weight := Current_Weight - Bottom.Next.Item.Weight;
@@ -145,6 +163,12 @@ PACKAGE BODY Backpack IS
                   Current.Num_Of_Item := Current.Num_Of_Item - 1;
                   Current_Weight := Current_Weight - Current.Item.Weight;
                ELSE
+                  IF Current.Item.Kind_Of_Item = WEAPON OR Current.Item.Kind_Of_Item = ARMOR THEN
+                     IF Current.Item.Is_Equipped THEN
+                        User_Message := To_Unbounded_String("You can't discard a weapon/armor that is equipped");
+                        RETURN;
+                     END IF;
+                  END IF;
                   Current.Prev.Next := Current.Next;
                   Current.Next.Prev := Current.Prev;
                   Current.Next := NULL;
@@ -191,9 +215,9 @@ PACKAGE BODY Backpack IS
                New_Line;
             END IF;
          END IF;
-         Put("Trade Value: $");
-         Put(Item => Current.Item.Loot_Value * 0.75, Fore => 2, Aft => 2, Exp => 0);
-         New_Line;
+         --Put("Trade Value: $");
+         --Put(Item => Current.Item.Loot_Value * 0.75, Fore => 2, Aft => 2, Exp => 0);
+         --New_Line;
          Current := Current.Next;
       END LOOP;
       Put("******************************************");
@@ -205,7 +229,8 @@ PACKAGE BODY Backpack IS
       New_Line;
    END Check_Backpack;
 
-   PROCEDURE Equip(Name_Of_Desired_Equipment : Unbounded_String; Current_Weapon : IN OUT Item_Type; Current_Armor : IN OUT Item_Type; Bottom : Zipper) IS
+   PROCEDURE Equip(Name_Of_Desired_Equipment : Unbounded_String; Current_Weapon : IN OUT Item_Type; Current_Armor : IN OUT Item_Type;
+                   Bottom : Zipper; User_Message : IN OUT Unbounded_String) IS
       Equip_Ptr : Zipper := Bottom;
       Unequip_Ptr   : Zipper := Bottom;
    BEGIN
@@ -230,16 +255,20 @@ PACKAGE BODY Backpack IS
          END IF;
          Equip_Ptr := Equip_Ptr.Prev;
       END LOOP;
-      Put("You don't own a piece of equipment that matches your request.");
-      New_Line;
+      User_Message := To_Unbounded_String("You don't own a piece of equipment matching that name");
    END Equip;
 
    FUNCTION Check_For_Item(Backpack : Zipper; Item_Name : Unbounded_String; How_Many : Integer) RETURN Boolean IS
       Current : Zipper := Backpack;
    BEGIN
       WHILE Current /= NULL LOOP
-         IF To_Lower(To_String(Current.Item.Name)) = To_Lower(To_String(Item_Name)) AND THEN Current.Num_Of_Item > How_Many THEN
-            RETURN True;
+         IF To_Lower(To_String(Current.Item.Name)) = To_Lower(To_String(Item_Name)) AND THEN Current.Num_Of_Item >= How_Many THEN
+            IF (Current.Item.Kind_Of_Item = WEAPON OR Current.Item.Kind_Of_Item = ARMOR) AND THEN
+               Current.Item.Is_Equipped AND THEN Current.Num_Of_Item = 1 THEN
+               RETURN False;
+            ELSE
+               RETURN True;
+            END IF;
          END IF;
          Current := Current.Next;
       END LOOP;
