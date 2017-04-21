@@ -15,9 +15,7 @@ WITH Alchemy_Tree;                    USE Alchemy_Tree;                         
 ------------------------------------------
 
 -- SOME THINGS THAT WILL NEED MODIFIED
--- WE MAY WANT TO LIMIT THE KINDS OF ITEMS THE PLAYER CAN GET SO THEY CANT GET A TON OF RUSTY SWORDS AND SO THERE ARENT TOO MANY EMPTY ROOMS
--- GET RID OF STUFF PRINTING AT THE TOP OF THE SCREEN **************************************
--- NEED TO FIX ERROR MESSAGE PRINTING ON SAME LINE AS 'H' PROMPT ***************************
+   -- WE MAY WANT TO LIMIT THE KINDS OF ITEMS THE PLAYER CAN GET SO THEY CANT GET A TON OF RUSTY SWORDS AND SO THERE ARENT TOO MANY EMPTY ROOMS
 
 PROCEDURE Adventure IS
 
@@ -48,6 +46,9 @@ PROCEDURE Adventure IS
    Creation          : Item_Type;                                      -- An item created from synthesis
    Synth_Tree        : Alchemy_Tree.Node_Ptr;                          -- A pointer to a tree that holds recipes
 
+   -- Prints a list of commands available to the player
+   -- Some are key commands on the map screen
+   -- Some are string commands on the backpack screen
    PROCEDURE Print_Help_Screen IS
    BEGIN
       Ret_Val := Sys(To_C("cls"));
@@ -132,6 +133,8 @@ PROCEDURE Adventure IS
          Put("Enter a command: ");                           -- The prompt
          Player_Command := To_Unbounded_String(Get_Line);    -- Retrieve the input
 
+         -- If the command is "recipes", open the recipes list for the user to see
+         -- LNR traversal of the synthesis tree
          IF To_Lower(To_String(Player_Command)) = To_Unbounded_String("recipes") THEN
             Ret_Val := Sys(To_C("cls"));
             Put("RECIPES LIST: ");
@@ -152,6 +155,7 @@ PROCEDURE Adventure IS
                IF Player1.Current_HP > Player1.Max_HP THEN
                   Player1.Current_HP := Player1.Max_HP;
                END IF;
+               -- Add the stat effects to the player's stats
                Player1.Strength      := Stats_Holder(2) + Player1.Strength;
                Player1.Constitution  := Stats_Holder(3) + Player1.Constitution;
                Player1.Dexterity     := Stats_Holder(4) + Player1.Dexterity;

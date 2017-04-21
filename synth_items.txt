@@ -1,11 +1,34 @@
 Potion
 Potion
+CONSUMABLE
 Hi-Potion
 Heals player HP by 30 points.
 0.5
 0.0
 30
 0
+0
+0
+0
+Potion
+Rusty Sword
+WEAPON
+Broad Sword
+A standard blade. No rust... not bad!
+6.5
+0.0
+10
+1
+7
+Spinach
+Spinach
+CONSUMABLE
+2 lbs of Spinach
+You realized that you could fit both lbs of spinach into one jar. Bravo!
+2.0
+0.0
+0
+10
 0
 0
 0

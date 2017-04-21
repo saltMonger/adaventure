@@ -21,7 +21,7 @@ Permanently increases strength by 5.
 WEAPON
 Rusty Sword
 A rusted sword you discovered on your journey. Not much, but a weapon's a weapon.
-5.0
+4.5
 0.0
 5
 0

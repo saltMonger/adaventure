@@ -19,9 +19,11 @@ PACKAGE Backpack IS
       Prev : Zipper;
    END RECORD;
 
+   -- To store status changes from consumable items
    SUBTYPE Array_Range IS Integer RANGE 1..5;
    TYPE Integer_Array IS ARRAY (Array_Range) OF Integer;
 
+   -- For cleaning up allocated memory
    PROCEDURE Free IS NEW Ada.Unchecked_Deallocation(Object => Pouch, Name => Zipper);
 
    -- Counters to keep track of the backpack's current weight vs the allowable weight

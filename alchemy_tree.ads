@@ -28,4 +28,7 @@ PACKAGE Alchemy_Tree IS
    -- Finds the appropriate recipe and returns it's creation for the calling program to store in the player's backpack
    PROCEDURE Synthesize(Ingredient1 : Unbounded_String; Ingredient2 : Unbounded_String; Creation : IN OUT Item_Type; Root : IN OUT Node_Ptr);
 
+   -- Prints the tree in LNR traversal(alphabetical order)
+   PROCEDURE Print_Tree(Root : Node_Ptr);
+
 END Alchemy_Tree;
