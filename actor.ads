@@ -14,7 +14,6 @@ PACKAGE ACTOR IS
    END RECORD;
 
    Type Loot_PTR is access Loot_Table;
-
    -- A record to store information about a particular monster
    TYPE Actor (Option : Actor_Type   :=   Monster) IS record
       Name   :   Unbounded_String   := To_Unbounded_String("");
@@ -47,14 +46,6 @@ PACKAGE ACTOR IS
 
 
 
---   type Monster is record
---      Name : Unbounded_String;
---      Level: Positive;
---      HP : Integer;
---      Strength : Integer;
---      Defense : Integer;
---      Agility : Integer;
---   end record;
 
    -- Set the enemy's physical attributes
    --PROCEDURE Create_Monster(Monster_Stats : IN File_Type; Mon : IN OUT Monster);
@@ -62,8 +53,13 @@ PACKAGE ACTOR IS
    -- Display the enemy's physical attributes
    --PROCEDURE Display_Monster_Stats(Mon : IN Monster);
 
+
+   --General Create/Display Procedures
+
+   --Creates an actor based on the Option input, and reads in from a file
    PROCEDURE Create_Actor(Actor_Stats : IN File_Type; Act : IN OUT Actor; Option : in Actor_Type);
 
+   --Displays the actor's stats, piped to console window
    PROCEDURE Display_Actor_Stats(Act : IN Actor; Option : IN Actor_Type);
 
 END ACTOR;

@@ -1,3 +1,7 @@
+--ATTN:
+--THIS PACKAGE IS DEPRECATED
+----------------------------------
+
 WITH Actor;  USE Actor;
 WITH Ada.Unchecked_Deallocation;
 WITH Ada.Text_IO;

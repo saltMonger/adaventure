@@ -2,6 +2,7 @@ With Ada.Numerics.Discrete_Random;
 
 PACKAGE DamageUtils IS
 
+      --Dice declarations
    	subtype D2 is Integer range 0 .. 1;
 	subtype D4 is Integer range 1 .. 3;
 	subtype D6 is Integer range 1 .. 6;
@@ -26,9 +27,13 @@ PACKAGE DamageUtils IS
    Die12   :   Random_D12.Generator;
    Die20   :   Random_D20.Generator;
 
+   --Sets the seed for all dice rollers
+   PROCEDURE InitDamageUtils;
 
-   Procedure InitDamageUtils;
-   FUNCTION RollDamage(DmgT : Integer; DmgNum : Integer; STR : Integer) return Integer;
+   --Determines damage, to be used with Enemy/Player damage routines
+   FUNCTION RollDamage(DmgT : Integer; DmgNum : Integer; STR : Integer) RETURN Integer;
+
+   --Determines attack value, used with Enemy/Player damage routines
    PROCEDURE RollAttack(DEX : IN Integer; IsCrit : OUT Boolean; RollValue : OUT Integer);
 
 

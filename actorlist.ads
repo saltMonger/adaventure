@@ -1,3 +1,6 @@
+--ATTN:
+--THIS PACKAGE IS DEPRECATED
+---------------------------------
 WITH Actor; USE Actor;
 PACKAGE Actorlist IS
 
@@ -11,6 +14,7 @@ PACKAGE Actorlist IS
    TYPE Actor_List IS RECORD
       Head   :   node_ptr   :=   NULL;
    END RECORD;
+
 
 
    PROCEDURE Add(Act_List : IN OUT Actor_List; Act_Rec : IN Actor.ACTOR);

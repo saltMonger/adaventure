@@ -2,6 +2,7 @@
 
 PACKAGE BODY DamageUtils IS
 
+   --Sets random function seeds
    PROCEDURE InitDamageUtils IS
    BEGIN
       Random_D2.Reset(Die2);
@@ -15,7 +16,7 @@ PACKAGE BODY DamageUtils IS
 
 
 
-
+   --Returns a damage value calculated as DiceType Roll + Strength
    FUNCTION RollDamage(DmgT : Integer; DmgNum : Integer; STR : Integer) RETURN Integer IS
       Damage   :   Integer   :=   0;
    BEGIN
@@ -67,6 +68,7 @@ PACKAGE BODY DamageUtils IS
       END CASE;
    END RollDamage;
 
+   --Uses actor dexterity to determine an attack value, and if it is critical or not
    PROCEDURE RollAttack(DEX : IN Integer; IsCrit : OUT Boolean; RollValue : OUT Integer) IS
       Roll   :   Integer   :=   0;
    BEGIN
@@ -74,7 +76,7 @@ PACKAGE BODY DamageUtils IS
       IF(Roll = 20) THEN
          IsCrit   :=   True;
       END IF;
-      RollValue := Roll + DEX;   --Change the scaling of Dexterity
+      RollValue := Roll + DEX;   --TODO: Change the scaling of Dexterity
    END RollAttack;
 
 END DamageUtils;
